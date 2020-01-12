@@ -1,0 +1,5 @@
+{
+    "port": 5000,
+    "mongoUri": "mongodb+srv://vosdux:123qwe@cluster0-vuamb.azure.mongodb.net/test?retryWrites=true&w=majority",
+    "jwtSecret": "vosdux"
+}
