@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Page } from './modules/Page';
 import * as actions from './store/actions';
 import Auth from './modules/Auth/Auth';
+import MainLayout from './components/MainLayout';
 
 class App extends Component {
   state = {
@@ -41,16 +42,9 @@ class App extends Component {
     const { isAuthinticated } = this.props;
     return (
       <BrowserRouter>
-        <Switch>
-          {isAuthinticated ? this.state.authRoutes.map((route, i) =>
-            <Route
-              key={'route' + i}
-              to={route.to}
-              render={props => {
-                return <route.component {...props} {...route} />
-              }}
-              other={route}
-            />) : this.state.nonAuthRoutes.map((route, i) =>
+        {isAuthinticated ? <MainLayout>
+          <Switch>
+            {this.state.authRoutes.map((route, i) =>
               <Route
                 key={'route' + i}
                 to={route.to}
@@ -59,8 +53,22 @@ class App extends Component {
                 }}
                 other={route}
               />)}
-          <Redirect to={isAuthinticated ? '/' : '/login'} />
-        </Switch>
+            <Redirect to='/' />
+          </Switch>
+        </MainLayout> : <Switch>
+          {this.state.nonAuthRoutes.map((route, i) =>
+                <Route
+                  key={'route' + i}
+                  to={route.to}
+                  render={props => {
+                    return <route.component {...props} {...route} />
+                  }}
+                  other={route}
+                />)}
+                <Redirect to='/login' />
+        </Switch>}
+
+
       </BrowserRouter>
     );
 
