@@ -14,11 +14,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.post('/', async (req, res) => {
+    try {
+        let name = req.body.name;
+        await Squad.create({name});
+        let squads = await Squad.find();
+        res.json({squads})
+    } catch (error) {
+        res.status(500).json({ message: 'Что-то пошло не так ' });
+    }
+})
+
 router.get('/:id', async (req, res) => {
     try {
-        const squad = await Squad.findById(req.params.id);
-        res.json({squad});
+        console.log('station')
+        const stations = await Station.find({ squad: req.params.id });
+        res.json({stations});
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 });

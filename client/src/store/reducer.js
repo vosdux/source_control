@@ -1,7 +1,8 @@
 import * as types from './actionTypes';
 
 const initialState = {
-    isAuthinticated: true
+    isAuthinticated: false,
+    role: null
 };
 
 const reducer = (state = initialState, action = {}) => {
@@ -9,7 +10,8 @@ const reducer = (state = initialState, action = {}) => {
         case types.USER_LOGIN:
             console.log('user');
             return {
-                isAuthinticated: action.isAuthinticated,
+                isAuthinticated: action.payload.isAuthinticated,
+                role: action.payload.role
             };
         default:
             console.log('state');

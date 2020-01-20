@@ -1,9 +1,12 @@
 import * as types from './actionTypes';
 
-export const userLoginAction = (bool) => {
+export const userLoginAction = (bool, role) => {
     console.log('use')
     return {
         type: types.USER_LOGIN,
-        isAuthinticated: bool
+        payload: {
+            isAuthinticated: bool,
+            role
+        }
     };
 };

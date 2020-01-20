@@ -3,9 +3,9 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const Token = require('../models/Token');
 
-const generateAccessToken = (userId) => {
+const generateAccessToken = (userId, role) => {
     const token = jwt.sign(
-        { userId, type: 'access' },
+        { userId, role, type: 'access' },
         config.get('jwtSecret'),
         { expiresIn: '1h' }
     );

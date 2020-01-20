@@ -2,17 +2,25 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import { Router } from 'react-router'
+import { createBrowserHistory } from 'history';
 import App from './App';
 import reducer from './store/reducer';
 import './index.css';
 import 'antd/dist/antd.css'
 
+
 const initialState = {
-    isAuthinticated: false
+    isAuthinticated: false,
+    role: null
 }
 const store = createStore(reducer, initialState);
+const history = createBrowserHistory()
 
 ReactDOM.render(
-    <Provider store={store}>
-        <App />
-    </Provider>, document.getElementById('root'));
+        <BrowserRouter history={history}>
+            <Provider store={store}>
+                <App />
+            </Provider>
+        </BrowserRouter>, document.getElementById('root'));

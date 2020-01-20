@@ -1,10 +1,18 @@
 import React, { Component } from 'react';
-import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import { Layout, Menu, Breadcrumb, Icon, Button } from 'antd';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import * as actions from '../store/actions';
 
 const { SubMenu } = Menu;
 const { Header, Content, Footer, Sider } = Layout;
 
 class MainLayout extends Component {
+    handleExitClick = () => {
+        localStorage.clear();
+        this.props.userLoginAction(false);
+    }
+
     render() {
         return (
             <Layout>
@@ -16,9 +24,10 @@ class MainLayout extends Component {
                         defaultSelectedKeys={['2']}
                         style={{ lineHeight: '64px' }}
                     >
-                        <Menu.Item key="1">nav 1</Menu.Item>
-                        <Menu.Item key="2">nav 2</Menu.Item>
-                        <Menu.Item key="3">nav 3</Menu.Item>
+                        <Menu.Item key="1">
+                            <Link to={'/'}>Главная</Link>
+                        </Menu.Item>
+                        
                     </Menu>
                 </Header>
                 <Content style={{ padding: '0 50px' }}>
@@ -79,9 +88,9 @@ class MainLayout extends Component {
                                 </SubMenu>
                             </Menu>
                         </Sider>
-                                <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                                    {this.props.children}
-                                </Content>
+                        <Content style={{ padding: '0 24px', minHeight: 280 }}>
+                            {this.props.children}
+                        </Content>
                     </Layout>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
@@ -90,4 +99,8 @@ class MainLayout extends Component {
     };
 };
 
-export default MainLayout;
+const mapDispatchToProps = {
+    userLoginAction: actions.userLoginAction
+}
+
+export default connect(null, mapDispatchToProps)(MainLayout);

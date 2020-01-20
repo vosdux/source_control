@@ -4,18 +4,19 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../models/User');
 const Token = require('../models/Token');
+const Role = require('../models/Role');
 const { check, validationResult } = require('express-validator');
 const uuid = require('uuid/v4');
 const router = Router();
 const authHelper = require('../helpers/authHelpers');
 
-const updateToken = async (userId) => {
+const updateToken = async (userId, role) => {
     try {
-        const accessToken = authHelper.generateAccessToken(userId);
+        const accessToken = authHelper.generateAccessToken(userId, role);
         const refreshToken = authHelper.generateRefreshToken();
         await authHelper.replaceDbRefreshToken(refreshToken.id, userId);
         
-        return { accessToken, refeshToken: refreshToken.token };
+        return { accessToken, refreshToken: refreshToken.token };
     } catch (error) {
         console.log(error);
     }
@@ -29,7 +30,6 @@ router.post(
     ],
     async (req, res) => {
         try {
-            console.log(req.body);
             const errors = validationResult(req);
             
             if (!errors.isEmpty()) {
@@ -53,25 +53,9 @@ router.post(
                 return res.status(400).json({ message: 'Неверный пароль' });
             }
 
-            const tokens = await updateToken(user._id);
-            console.log(tokens);
-            res.json(tokens);
-            // const secret = config.get('jwtSecret'),
+            const tokens = await updateToken(user._id, user.role);
+            res.json({accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, role: user.role});
 
-            // const token = jwt.sign(
-            //     { userId: user.id, type: 'access' },
-            //     secret,
-            //     { expiresIn: '1h' }
-            // );
-
-            // const refreshToken = jwt.sign(
-            //     { id: uuid(), type: 'refresh'},
-            //     secret,
-            //     { expiresIn: '24h' }
-            // );
-
-            // Token.findOneAndRemove()
-            // res.cookie('jwt', token, { expires: new Date(Date.now() + 900000), httpOnly: true });
         } catch (error) {
             console.log(error)
             res.status(500).json({ message: 'Что-то пошло не так' });
@@ -80,7 +64,7 @@ router.post(
 
 router.post('/refresh-token', async (res, req) => {
     try {
-        const { refeshToken } = req.body;
+        const { refreshToken } = req.body;
         const payload = jwt.verify(refreshToken, secret);
         if (payload.type !== 'refresh') {
             res.status(400).json({ message: 'Неверный токен!' });

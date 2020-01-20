@@ -10,14 +10,13 @@ class NormalLoginForm extends Component {
         loading: false
     };
 
-    loginHandler = (accessToken, refreshToken) => {
-        console.log(accessToken)
+    loginHandler = (accessToken, refreshToken, role) => {
         localStorage.setItem('userData', JSON.stringify({
             accessToken,
-            refreshToken
+            refreshToken,
+            role
         }));
-        this.props.userLoginAction(true);
-        console.log('Выполнено')
+        this.props.userLoginAction(true, role);
     }
 
     handleSubmit = e => {
@@ -33,9 +32,9 @@ class NormalLoginForm extends Component {
                     .then(response => {
                         if (response.status === 200) {
                             const { data } = response;
+                            console.log(data)
                             if (data) {
-                                console.log(data)
-                                this.loginHandler(data.accessToken, data.refreshToken)
+                                this.loginHandler(data.accessToken, data.refreshToken, data.role)
                             }
                         } else {
                             console.log(response);

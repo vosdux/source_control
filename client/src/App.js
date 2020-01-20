@@ -1,19 +1,25 @@
 import React, { Component } from 'react';
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
-import { Page } from './modules/Page';
+import Squads from './modules/Squads';
+import Peoples from './modules/Peoples';
+import Stations from './modules/Stations';
+import SquadForm from './components/AdminForms/SquadForm';
 import * as actions from './store/actions';
 import Auth from './modules/Auth/Auth';
 import MainLayout from './components/MainLayout';
+
 
 class App extends Component {
   state = {
     authRoutes: [
       {
-        to: "/",
-        exact: true,
-        component: Page
+        to: "/:scope(squads)",
+        component: Squads
+      },
+      {
+        to: "/:scope(squads)/:id",
+        component: Stations
       }
     ],
     nonAuthRoutes: [
@@ -30,29 +36,32 @@ class App extends Component {
     console.log(data);
     if (data) {
       let parsedData = JSON.parse(data);
-      if (parsedData.accessToken) {
+      if (parsedData.accessToken && parsedData.role) {
         console.log(parsedData)
-        this.props.userLoginAction(true);
+        this.props.userLoginAction(true, parsedData.role);
       }
     }
   }
 
   render() {
-    console.log(this.props);
     const { isAuthinticated } = this.props;
     return (
-      <BrowserRouter>
+      <>
         {isAuthinticated ? <MainLayout>
           <Switch>
-            {this.state.authRoutes.map((route, i) =>
-              <Route
-                key={'route' + i}
-                to={route.to}
-                render={props => {
-                  return <route.component {...props} {...route} />
-                }}
-                other={route}
-              />)}
+            <Route 
+              path='/' 
+              exact
+              render={(props) => <Squads {...props} />}
+            />
+            <Route 
+              path='/:id/:stationId' 
+              render={(props) => <Peoples {...props} />}
+            />
+            <Route 
+              path='/:id' 
+              render={(props) => <Stations {...props} />}
+            />
             <Redirect to='/' />
           </Switch>
         </MainLayout> : <Switch>
@@ -67,9 +76,7 @@ class App extends Component {
                 />)}
                 <Redirect to='/login' />
         </Switch>}
-
-
-      </BrowserRouter>
+      </>  
     );
 
   }
