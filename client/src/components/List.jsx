@@ -8,35 +8,9 @@ import { getRole } from '../helpers/Utils';
 import { connect } from 'react-redux';
 import SquadForm from '../components/AdminForms/SquadForm';
 
-class Squads extends Component {
+class List extends Component {
     state = {
         data: [],
-        columns: [
-            {
-                title: 'Наименование',
-                dataIndex: 'name',
-                key: 'name',
-                render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
-            }
-        ],
-        adminColumns: [
-            {
-                title: 'Наименование',
-                dataIndex: 'name',
-                key: 'name',
-                render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
-            },
-            {
-                title: '',
-                key: 'edit',
-                render: (text, record) => <Icon type="edit" onClick={() => {this.openModal('edit'); this.setState({editbleData: record})}} />
-            },
-            {
-                title: '',
-                key: 'delete',
-                render: (text, record) => <Icon type="delete" onClick={() => this.deleteItem(record._id)} />
-            },
-        ],
         loading: true,
         modalVisible: false,
         mode: 'create',
@@ -44,13 +18,14 @@ class Squads extends Component {
     }
 
     componentDidMount() {
-        this.getSquads();
+        this.getData();
     };
 
-    getSquads = () => {
+    getData = (url) => {
+        const { dataUrl, entity } = this.props;
         axios({
             method: 'get',
-            url: 'http://localhost:5000/api/squad',
+            url: dataUrl,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -58,7 +33,7 @@ class Squads extends Component {
                     let { data } = response;
                     if (data) {
                         console.log(data.squads)
-                        this.setState({ data: data.squads, loading: false });
+                        this.setState({ data: data[entity], loading: false });
                     } else {
                         console.log(response);
                     }
@@ -68,9 +43,10 @@ class Squads extends Component {
     };
 
     deleteItem = (id) => {
+        const { dataUrl, entity } = this.props;
         axios({
             method: 'delete',
-            url: `http://localhost:5000/api/squad/${id}`,
+            url: dataUrl + id,
             headers: { "Authorization": `Bearer ${getAccessToken()}` },
         })
             .then((response) => {
@@ -78,7 +54,7 @@ class Squads extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data.squads)
-                        this.setState({ data: data.squads, loading: false });
+                        this.setState({ data: data[entity], loading: false });
                     } else {
                         console.log(response);
                     }
@@ -100,11 +76,11 @@ class Squads extends Component {
     };
 
     render() {
-        const { columns, data, loading, modalVisible, adminColumns, mode, editbleData } = this.state;
-        const { role } = this.props;
+        const { data, loading, modalVisible, mode, editbleData } = this.state;
+        const { role, adminColumns, columns, title } = this.props;
         return (
             <>
-                <h1>Отряды ФПС МЧС России по Московской области</h1>
+                <h1>{title}</h1>
                 {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
                 <Table
                     columns={getRole(role) === 'admin' ? adminColumns : columns}
@@ -135,4 +111,4 @@ const mapStateToProps = (state) => {
     return {role};
 }
 
-export default connect(mapStateToProps)(Squads);
+export default connect(mapStateToProps)(List);
