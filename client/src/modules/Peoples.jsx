@@ -36,7 +36,7 @@ class Peoples extends Component {
                     title: 'Имя',
                     dataIndex: 'name',
                     key: 'name',
-                    render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
+                    render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
                 },
                 {
                     title: 'Фамилия',
@@ -51,7 +51,7 @@ class Peoples extends Component {
                 {
                     title: '',
                     key: 'edit',
-                    render: (text, record) => <Icon type="edit" onClick={() => {this.openModal('edit'); this.setState({editbleData: record})}} />
+                    render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
                 },
                 {
                     title: '',
@@ -77,7 +77,7 @@ class Peoples extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.peoples, loading: false});
+                        this.setState({ data: data.peoples, loading: false });
                     } else {
                         console.log(response)
                     }
@@ -87,15 +87,15 @@ class Peoples extends Component {
     };
 
     setData = (data) => {
-        this.setState({data})
+        this.setState({ data })
     };
 
     openModal = (mode) => {
-        this.setState({mode, modalVisible: true});
+        this.setState({ mode, modalVisible: true });
     };
 
     closeModal = () => {
-        this.setState({modalVisible: false});
+        this.setState({ modalVisible: false });
     };
 
     render() {
@@ -132,7 +132,7 @@ class Peoples extends Component {
 
 const mapStateToProps = (state) => {
     const { role } = state;
-    return {role};
+    return { role };
 }
 
 export default connect(mapStateToProps)(Peoples);

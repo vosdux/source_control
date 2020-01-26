@@ -8,3 +8,29 @@
 .mt-2 {
     margin-top: 2rem!important;
 }
+.mr-10px {
+    margin-right: 10px!important;
+}
+.user-name {
+    font-size: 25px;
+}
+.mt-0 {
+    margin-top: 0!important;
+}
+.mb-2px {
+    margin-bottom: 2px!important;
+}
+.rank {
+    font-size: 20px;
+}
+.avatar {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 240px;
+    height: 300px;
+}
+.property {
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 20px;
+}

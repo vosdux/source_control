@@ -2,19 +2,33 @@ const { Router } = require('express');
 const Squad = require('../models/Squad');
 const Station = require('../models/Station');
 const People = require('../models/People');
+const Property = require('../models/Property');
+const Rank = require('../models/Rank');
 const multer = require('multer');
-const fs = require('fs')
+const path = require('path');
 
-var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads')
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads');
     },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now())
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
     }
-})
+});
 
-const upload = multer({ storage: storage })
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png') {
+            const err = new Error('Неверный формат');
+            err.code = 'EXTENSION';
+            return cb(err);
+        }
+        cb(null, true);
+    }
+}).single('avatar')
 
 const router = Router();
 
@@ -101,7 +115,7 @@ router.put('/:squadId/:stationId', async (req, res) => {
 
 router.get('/:squadId/:stationId', async (req, res) => {
     try {
-        const peoples = await People.findById(req.params.stationId);
+        const peoples = await People.find({ station: req.params.stationId}, {name: 1, secondName: 1, midleName: 1});
         res.json({ peoples });
     } catch (error) {
         res.status(500).json({ message: 'Что-то пошло не так' });
@@ -110,18 +124,33 @@ router.get('/:squadId/:stationId', async (req, res) => {
 
 router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
-        const people = await People.findById(req.params.peopleId);
+        const people = await People.findById(req.params.peopleId).populate('rank');
+        console.log(people.rank.name)
         res.json({ people });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 });
 
-router.post('/:squadId/:stationId/', (req, res) => {
+router.post('/:squadId/:stationId/', async (req, res) => {
+    try {
+        upload(req, res, err => {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                throw new Error('Картинка не более 2мб')
+            }
+            if (err.code === 'EXTENSION') {
+                throw new Error('Только jpg или png')
+            }
+        });
 
-
-    console.log(req.file);
-
+        await People.create(req.body);
+        const peoples = await People.find({ station: req.params.stationId});
+        res.json({ peoples });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: 'Что-то пошло не так' });
+    }
 })
 
 module.exports = router;

@@ -1,12 +1,10 @@
 const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const config = require('config');
 const User = require('../models/User');
 const Token = require('../models/Token');
 const Role = require('../models/Role');
 const { check, validationResult } = require('express-validator');
-const uuid = require('uuid/v4');
 const router = Router();
 const authHelper = require('../helpers/authHelpers');
 
@@ -15,7 +13,7 @@ const updateToken = async (userId, role) => {
         const accessToken = authHelper.generateAccessToken(userId, role);
         const refreshToken = authHelper.generateRefreshToken();
         await authHelper.replaceDbRefreshToken(refreshToken.id, userId);
-        
+
         return { accessToken, refreshToken: refreshToken.token };
     } catch (error) {
         console.log(error);
@@ -31,7 +29,7 @@ router.post(
     async (req, res) => {
         try {
             const errors = validationResult(req);
-            
+
             if (!errors.isEmpty()) {
                 return res.status(400).json({
                     errors: errors.array(),
@@ -69,7 +67,7 @@ router.post('/refresh-token', async (res, req) => {
         if (payload.type !== 'refresh') {
             res.status(400).json({ message: 'Неверный токен!' });
         }
-         
+
         const tokenData = await Token.findOne({ tokenId: payload.id });
 
         if (tokenData = null) {

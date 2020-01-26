@@ -8,6 +8,7 @@ import SquadForm from './components/AdminForms/SquadForm';
 import * as actions from './store/actions';
 import Auth from './modules/Auth/Auth';
 import MainLayout from './components/MainLayout';
+import PeopleCard from './modules/PeopleCard';
 
 
 class App extends Component {
@@ -49,17 +50,21 @@ class App extends Component {
       <>
         {isAuthinticated ? <MainLayout>
           <Switch>
-            <Route 
-              path='/' 
+            <Route
+              path='/'
               exact
               render={(props) => <Squads {...props} />}
             />
-            <Route 
-              path='/:id/:stationId' 
+            <Route
+              path='/:id/:stationId/:peopleId'
+              render={(props) => <PeopleCard {...props} />}
+            />
+            <Route
+              path='/:id/:stationId'
               render={(props) => <Peoples {...props} />}
             />
-            <Route 
-              path='/:id' 
+            <Route
+              path='/:id'
               render={(props) => <Stations {...props} />}
             />
             <Redirect to='/' />
@@ -76,7 +81,7 @@ class App extends Component {
                 />)}
                 <Redirect to='/login' />
         </Switch>}
-      </>  
+      </>
     );
 
   }
