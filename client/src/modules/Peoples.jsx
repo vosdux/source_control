@@ -6,6 +6,7 @@ import { errorModalCreate } from '../helpers/Modals';
 import { Table, Modal, Button, Icon } from 'antd';
 import { connect } from 'react-redux';
 import PeopleForm from '../components/AdminForms/PeopleForm';
+import { Layout } from 'antd';
 
 class Peoples extends Component {
     constructor(props) {
@@ -101,8 +102,9 @@ class Peoples extends Component {
     render() {
         const { data, columns, loading, adminColumns, editbleData, modalVisible, mode } = this.state;
         const { role } = this.props;
+        const { Content } = Layout;
         return (
-            <>
+            <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <h1>Сотрудники</h1>
                 {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
                 <Table
@@ -125,7 +127,7 @@ class Peoples extends Component {
                         stationId={this.props.location.pathname.split('/')[2]}
                     />
                 </Modal>}
-            </>
+            </Content>
         );
     };
 };

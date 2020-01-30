@@ -7,6 +7,7 @@ import { Table, Modal, Button, Icon } from 'antd';
 import { getRole } from '../helpers/Utils';
 import { connect } from 'react-redux';
 import StationForm from '../components/AdminForms/StationForm';
+import { Layout } from 'antd';
 
 class Stations extends Component {
     constructor(props) {
@@ -112,8 +113,9 @@ class Stations extends Component {
     render() {
         const { data, columns, loading, modalVisible, mode, editbleData, adminColumns } = this.state;
         const { role, location: { pathname } } = this.props;
+        const { Content } = Layout;
         return (
-            <>
+            <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <h1>Пожарные части</h1>
                 {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
                 <Table
@@ -135,7 +137,7 @@ class Stations extends Component {
                         squadId={pathname.split('/')[1]}
                     />
                 </Modal>}
-            </>
+            </Content>
         );
     };
 };

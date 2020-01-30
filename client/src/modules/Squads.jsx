@@ -7,6 +7,7 @@ import { errorModalCreate } from '../helpers/Modals'
 import { getRole } from '../helpers/Utils';
 import { connect } from 'react-redux';
 import SquadForm from '../components/AdminForms/SquadForm';
+import { Layout } from 'antd';
 
 class Squads extends Component {
     state = {
@@ -29,7 +30,7 @@ class Squads extends Component {
             {
                 title: '',
                 key: 'edit',
-                render: (text, record) => <Icon type="edit" onClick={() => {this.openModal('edit'); this.setState({editbleData: record})}} />
+                render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
             },
             {
                 title: '',
@@ -88,22 +89,23 @@ class Squads extends Component {
     };
 
     setData = (data) => {
-        this.setState({data})
+        this.setState({ data })
     };
 
     openModal = (mode) => {
-        this.setState({mode, modalVisible: true});
+        this.setState({ mode, modalVisible: true });
     };
 
     closeModal = () => {
-        this.setState({modalVisible: false});
+        this.setState({ modalVisible: false });
     };
 
     render() {
         const { columns, data, loading, modalVisible, adminColumns, mode, editbleData } = this.state;
         const { role } = this.props;
+        const { Content } = Layout;
         return (
-            <>
+            <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <h1>Отряды ФПС МЧС России по Московской области</h1>
                 {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
                 <Table
@@ -124,7 +126,7 @@ class Squads extends Component {
                         editbleData={editbleData}
                     />
                 </Modal>}
-            </>
+            </Content>
         );
     };
 };
@@ -132,7 +134,7 @@ class Squads extends Component {
 
 const mapStateToProps = (state) => {
     const { role } = state;
-    return {role};
+    return { role };
 }
 
 export default connect(mapStateToProps)(Squads);

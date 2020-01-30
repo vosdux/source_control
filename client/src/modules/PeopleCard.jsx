@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { getAccessToken, getRole } from '../helpers/Utils';
+import { getAccessToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon, Card, Row, Col, Typography, Checkbox } from 'antd';
-import { connect } from 'react-redux';
-import PeopleForm from '../components/AdminForms/PeopleForm';
+import { Table, Modal, Button, Icon, Card, Row, Typography, Menu } from 'antd';
+import PropertyForm from '../components/Forms/PropertyForm';
+import PropertyList from '../components/PropertyList';
+import { Layout } from 'antd';
 
 class PeopleCard extends Component {
     constructor(props) {
@@ -13,7 +13,9 @@ class PeopleCard extends Component {
         this.state = {
             data: [],
             loading: true,
-            modalVisible: false
+            modalVisible: false,
+            propertyModalVisible: false,
+            propertyModalTitle: ''
         }
     }
 
@@ -46,52 +48,103 @@ class PeopleCard extends Component {
         this.setState({
             modalVisible: true
         });
-    }
+    };
 
     closeModal = () => {
         this.setState({
             modalVisible: false
         })
-    }
+    };
+
+    openPropertyModal = (name) => {
+        const { data } = this.state
+        let result = [];
+        data && data.property.forEach(item => {
+            if (item.name === name) {
+                result.push(item);
+            }
+        });
+        this.setState({ property: result, propertyModalVisible: true, propertyModalTitle: name });
+    };
+
+    closePropertyModal = () => {
+        this.setState({propertyModalVisible: false});
+    };
 
     render() {
-        const { data: { name, secondName, midleName, rank, position, upload }, loading, modalVisible } = this.state;
-        const { Title, Text, Paragraph } = Typography;
+        const { data: { name, secondName, midleName, rank, position, upload }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle } = this.state;
+        const { Title, Text } = Typography;
+        const { Content, Sider } = Layout;
+        const { SubMenu } = Menu;
         return (
             <>
-                <Card loading={loading}>
-                    <Row type="flex">
-                        <Title className="mr-10px mb-2px">{name}</Title>
-                        <Title className="mt-0 mr-10px mb-2px">{secondName}</Title>
-                        <Title className="mt-0 mb-2px">{midleName}</Title>
-                    </Row>
-                    <Row>
-                        <Text className="rank">{position}</Text>
-                    </Row>
-                    <Row>
-                        <Text className="rank">{rank && rank.name}</Text>
-                    </Row>
-                    <Row>
-                        <img src={upload} className="avatar" alt="" />
-                    </Row>
-                    <Row>
-                        <Button type="primary" icon="plus" onClick={this.openModal}>Добавить имущество</Button>
-                    </Row>
-                </Card>
-                <Modal
-                    title="Выдать имущество"
-                    visible={modalVisible}
-                    onCancel={this.closeModal}
-                    onOk={this.openModal}
-                >
-                    {rank && rank.properties.map((item, index) => <>
-                        <Row>
-                            <Text key={index} className='property'>{item}</Text>
-                            <Checkbox></Checkbox>
+                <Sider width={200} style={{ background: '#fff' }}>
+                    <Menu
+                        mode="inline"
+                        defaultOpenKeys={['sub1']}
+                        style={{ height: '100%' }}
+                    >
+                        <SubMenu
+                            key="sub1"
+                            title={
+                                <span>
+                                    <Icon type="user" />
+                                    Имущество
+                                        </span>
+                            }
+                        >
+                            {rank && rank.properties.map(item => <Menu.Item
+                                key={item.fieldName}
+                                onClick={() => this.openPropertyModal(item.name)}
+                            >{item.name}</Menu.Item>)}
+                        </SubMenu>
+
+                    </Menu>
+                </Sider>
+                <Content style={{ padding: '0 24px', minHeight: 280 }}>
+                    <Card loading={loading}>
+                        <Row type="flex">
+                            <Title className="mr-10px mb-2px">{name}</Title>
+                            <Title className="mt-0 mr-10px mb-2px">{secondName}</Title>
+                            <Title className="mt-0 mb-2px">{midleName}</Title>
                         </Row>
-                    </>
-                    )}
-                </Modal>
+                        <Row>
+                            <Text className="rank">{position}</Text>
+                        </Row>
+                        <Row>
+                            <Text className="rank">{rank && rank.name}</Text>
+                        </Row>
+                        <Row>
+                            <img src={upload} className="avatar" alt="" />
+                        </Row>
+                        <Row>
+                            <Button type="primary" icon="plus" onClick={this.openModal}>Добавить имущество</Button>
+                        </Row>
+                    </Card>
+                    <Modal
+                        title="Выдать имущество"
+                        visible={modalVisible}
+                        onCancel={this.closeModal}
+                        onOk={this.openModal}
+                        footer={false}
+                    >
+                        <PropertyForm
+                            properties={rank && rank.properties}
+                            peopleId={this.props.location.pathname.split('/')[3]}
+                            squadId={this.props.location.pathname.split('/')[1]}
+                            statioId={this.props.location.pathname.split('/')[2]}
+                            closeModal={this.closeModal}
+                        />
+                    </Modal>
+                    <Modal
+                        title={propertyModalTitle}
+                        visible={propertyModalVisible}
+                        onCancel={this.closePropertyModal}
+                        destroyOnClose={true}
+                    >
+                        <PropertyList property={property}/>
+                    </Modal>
+                </Content>
             </>
         );
     };

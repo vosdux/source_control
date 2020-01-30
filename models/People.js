@@ -8,7 +8,10 @@ const schema = new Schema({
     rank: {type: Types.ObjectId, ref: 'Rank', required: true},
     station: {type: Types.ObjectId, ref: 'Station', required: true},
     upload: {type: String, required: false},
-    property: [{type: Types.ObjectId, ref: 'Property'}]
+    property: [{
+        name: {type: String, required: true},
+        date: {type: Date, required: true, default: Date.now}
+    }]
 });
 
 module.exports = model('People', schema);

@@ -125,7 +125,19 @@ router.get('/:squadId/:stationId', async (req, res) => {
 router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
         const people = await People.findById(req.params.peopleId).populate('rank');
-        console.log(people.rank.name)
+        res.json({ people });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Что-то пошло не так' });
+    }
+});
+
+router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
+    try {
+        req.body.result.forEach(async (item) => {
+            await People.updateOne( { _id: req.params.peopleId } , { $push: { property: { name: item } } } );
+        })
+        const people = await People.findById(req.params.peopleId).populate('rank');
         res.json({ people });
     } catch (error) {
         console.log(error);
