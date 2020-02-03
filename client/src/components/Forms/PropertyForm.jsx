@@ -22,7 +22,7 @@ class PForm extends Component {
                 for (let value in values) {
                     if (values[value]) {
                         let res = properties.find(item => item.fieldName === value)
-                        result.push(res.name);
+                        result.push(res._id);
 
                     }
                 }

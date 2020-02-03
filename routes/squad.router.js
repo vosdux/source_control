@@ -3,6 +3,7 @@ const Squad = require('../models/Squad');
 const Station = require('../models/Station');
 const People = require('../models/People');
 const Property = require('../models/Property');
+const Norm = require('../models/Norm');
 const Rank = require('../models/Rank');
 const multer = require('multer');
 const path = require('path');
@@ -125,7 +126,8 @@ router.get('/:squadId/:stationId', async (req, res) => {
 router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
         const people = await People.findById(req.params.peopleId).populate('rank');
-        res.json({ people });
+        const norm = await Norm.find({ owners: { "$in": people.rank._id } }).populate('properties')
+        res.json({ people, norm });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });
@@ -135,7 +137,7 @@ router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
 router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
         req.body.result.forEach(async (item) => {
-            await People.updateOne( { _id: req.params.peopleId } , { $push: { property: { name: item } } } );
+            await People.updateOne( { _id: req.params.peopleId } , { $push: { propertyes: { property: item } } } );
         })
         const people = await People.findById(req.params.peopleId).populate('rank');
         res.json({ people });

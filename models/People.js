@@ -8,8 +8,8 @@ const schema = new Schema({
     rank: {type: Types.ObjectId, ref: 'Rank', required: true},
     station: {type: Types.ObjectId, ref: 'Station', required: true},
     upload: {type: String, required: false},
-    property: [{
-        name: {type: String, required: true},
+    propertyes: [{
+        property: {type: Types.ObjectId, ref: 'Property', required: true},
         date: {type: Date, required: true, default: Date.now}
     }]
 });

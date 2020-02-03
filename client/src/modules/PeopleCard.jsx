@@ -34,7 +34,7 @@ class PeopleCard extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.people, loading: false });
+                        this.setState({ data: data, loading: false });
 
                     } else {
                         console.log(response)
@@ -72,10 +72,11 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { data: { name, secondName, midleName, rank, position, upload }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle } = this.state;
+        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle } = this.state;
         const { Title, Text } = Typography;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
+        console.log(this.state.data)
         return (
             <>
                 <Sider width={200} style={{ background: '#fff' }}>
@@ -93,7 +94,7 @@ class PeopleCard extends Component {
                                         </span>
                             }
                         >
-                            {rank && rank.properties.map(item => <Menu.Item
+                            {norm && norm[0].properties.map(item => <Menu.Item
                                 key={item.fieldName}
                                 onClick={() => this.openPropertyModal(item.name)}
                             >{item.name}</Menu.Item>)}
@@ -104,18 +105,18 @@ class PeopleCard extends Component {
                 <Content style={{ padding: '0 24px', minHeight: 280 }}>
                     <Card loading={loading}>
                         <Row type="flex">
-                            <Title className="mr-10px mb-2px">{name}</Title>
-                            <Title className="mt-0 mr-10px mb-2px">{secondName}</Title>
-                            <Title className="mt-0 mb-2px">{midleName}</Title>
+                            <Title className="mr-10px mb-2px">{people && people.name}</Title>
+                            <Title className="mt-0 mr-10px mb-2px">{people && people.secondName}</Title>
+                            <Title className="mt-0 mb-2px">{people && people.midleName}</Title>
                         </Row>
                         <Row>
-                            <Text className="rank">{position}</Text>
+                            <Text className="rank">{people && people.position}</Text>
                         </Row>
                         <Row>
-                            <Text className="rank">{rank && rank.name}</Text>
+                            <Text className="rank">{people && people.rank.name}</Text>
                         </Row>
                         <Row>
-                            <img src={upload} className="avatar" alt="" />
+                            <img src={people && people.upload} className="avatar" alt="" />
                         </Row>
                         <Row>
                             <Button type="primary" icon="plus" onClick={this.openModal}>Добавить имущество</Button>
@@ -129,7 +130,7 @@ class PeopleCard extends Component {
                         footer={false}
                     >
                         <PropertyForm
-                            properties={rank && rank.properties}
+                            properties={norm && norm[0].properties}
                             peopleId={this.props.location.pathname.split('/')[3]}
                             squadId={this.props.location.pathname.split('/')[1]}
                             statioId={this.props.location.pathname.split('/')[2]}
