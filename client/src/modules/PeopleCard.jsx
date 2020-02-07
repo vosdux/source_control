@@ -5,7 +5,7 @@ import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
 import Statistic from '../components/Statistic';
 import ProfileCard from '../components/ProfileCard';
-import { getAccessToken } from '../helpers/Utils';
+import { getAccessToken, isLifeTimeEnd } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 
 class PeopleCard extends Component {
@@ -16,7 +16,8 @@ class PeopleCard extends Component {
             loading: true,
             modalVisible: false,
             propertyModalVisible: false,
-            propertyModalTitle: ''
+            propertyModalTitle: '',
+            disadvantage: []
         }
     }
 
@@ -35,7 +36,7 @@ class PeopleCard extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data, loading: false });
+                        this.setState({ data: data, loading: false }, () => this.statistic());
 
                     } else {
                         console.log(response)
@@ -44,6 +45,26 @@ class PeopleCard extends Component {
             })
             .catch((error) => errorModalCreate(error.message));
     };
+
+    statistic = () => {
+        const { data: { norm, people } } = this.state;
+        let property = [];
+        console.log(people)
+        if (people && people.propertyes) {
+            property = isLifeTimeEnd(people.propertyes);
+        }
+
+        console.log(property);
+        let convertedProperty = [];
+        property.forEach(item => {
+            if (item.lifeTime) {
+                convertedProperty.push(item.property._id);
+            }
+        })
+        console.log(convertedProperty);
+        let disadvantage = norm[0].properties.filter(item => !~convertedProperty.indexOf(item._id));
+        this.setState({disadvantage});
+    }
 
     openModal = () => {
         this.setState({
@@ -73,7 +94,7 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle } = this.state;
+        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage } = this.state;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
         const { TabPane } = Tabs;
@@ -127,7 +148,9 @@ class PeopleCard extends Component {
                             }
                             key="2"
                         >
-                            <Statistic />
+                            <Statistic
+                                disadvantage={disadvantage}
+                            />
                         </TabPane>
                     </Tabs>
 

@@ -37,6 +37,7 @@ class Statistic extends Component {
     };
 
     render() {
+        const { disadvantage } = this.props;
         return (
             <>
                 TAB

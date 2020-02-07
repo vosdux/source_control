@@ -1,4 +1,6 @@
 
+import moment from 'moment';
+
 export function convertTimeValue(time) {
     return time < 10 ? '0' + time.slice(-2) : time
 }
@@ -20,4 +22,14 @@ export const getRole = (roleId) => {
     }
 }
 
+export const isLifeTimeEnd = (property) => {
+    property.forEach(item => {
+        let date = item.date && item.date.split('T')[0];
+        item.date = date;
+        let lifeTimeEnd = moment(date).add(item.property.lifeTime, 'years');
+        let now = moment();
+        item.lifeTime = moment(lifeTimeEnd).isAfter(now);
+    });
 
+    return property;
+}

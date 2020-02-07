@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Table, Icon } from 'antd';
-import moment from 'moment';
+import { isLifeTimeEnd } from '../helpers/Utils';
 
 class PropertyList extends Component {
     state = {
@@ -27,14 +27,8 @@ class PropertyList extends Component {
 
     convertDate = () => {
         const { property } = this.props;
-        property.forEach(item => {
-            let date = item.date && item.date.split('T')[0];
-            item.date = date;
-            let lifeTimeEnd = moment(date).add(item.property.lifeTime, 'years');
-            let now = moment();
-            item.lifeTime = moment(lifeTimeEnd).isAfter(now);
-        });
-        this.setState({convertedProperty: property}, () => console.log(this.state.convertedProperty))
+        let convertedProperty = isLifeTimeEnd(property)
+        this.setState({convertedProperty}, () => console.log(this.state.convertedProperty))
     }
 
     render() {
