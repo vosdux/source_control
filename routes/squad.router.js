@@ -116,7 +116,7 @@ router.put('/:squadId/:stationId', async (req, res) => {
 
 router.get('/:squadId/:stationId', async (req, res) => {
     try {
-        const peoples = await People.find({ station: req.params.stationId}, {name: 1, secondName: 1, midleName: 1});
+        const peoples = await People.find({ station: req.params.stationId}, {name: 1, secondName: 1, midleName: 1, rank: 1, position: 1}).populate('rank');
         res.json({ peoples });
     } catch (error) {
         res.status(500).json({ message: 'Что-то пошло не так' });
@@ -125,7 +125,7 @@ router.get('/:squadId/:stationId', async (req, res) => {
 
 router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
-        const people = await People.findById(req.params.peopleId).populate('rank');
+        const people = await People.findById(req.params.peopleId).populate('rank').populate('propertyes.property').exec();
         const norm = await Norm.find({ owners: { "$in": people.rank._id } }).populate('properties')
         res.json({ people, norm });
     } catch (error) {
@@ -137,10 +137,17 @@ router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
 router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
         req.body.result.forEach(async (item) => {
-            await People.updateOne( { _id: req.params.peopleId } , { $push: { propertyes: { property: item } } } );
+            let propertyes = {
+                property: item.property
+            };
+
+            if (item.date) {
+                propertyes.date = item.date;
+            }
+
+            await People.updateOne( { _id: req.params.peopleId } , { $push: { propertyes } } );
         })
-        const people = await People.findById(req.params.peopleId).populate('rank');
-        res.json({ people });
+        res.json({ message: 'Успех!' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });

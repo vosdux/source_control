@@ -16,38 +16,32 @@ class Peoples extends Component {
             columns: [
                 {
                     title: 'Имя',
-                    dataIndex: 'name',
-                    key: 'name',
+                    dataIndex: 'fullName',
                     render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
                 },
                 {
-                    title: 'Фамилия',
-                    dataIndex: 'secondName',
-                    key: 'secondName',
+                    title: 'Звание',
+                    dataIndex: 'rank',
                 },
                 {
-                    title: 'Отчество',
-                    dataIndex: 'midleName',
-                    key: 'midleName',
+                    title: 'Должность',
+                    dataIndex: 'position',
                 },
             ],
             loading: true,
             adminColumns: [
                 {
                     title: 'Имя',
-                    dataIndex: 'name',
-                    key: 'name',
+                    dataIndex: 'fullName',
                     render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
                 },
                 {
-                    title: 'Фамилия',
-                    dataIndex: 'secondName',
-                    key: 'secondName',
+                    title: 'Звание',
+                    dataIndex: 'rank',
                 },
                 {
-                    title: 'Отчество',
-                    dataIndex: 'midleName',
-                    key: 'midleName',
+                    title: 'Должность',
+                    dataIndex: 'position',
                 },
                 {
                     title: '',
@@ -78,7 +72,7 @@ class Peoples extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.peoples, loading: false });
+                        this.setState({ data: data.peoples, loading: false }, () => this.formatPeople() );
                     } else {
                         console.log(response)
                     }
@@ -86,6 +80,19 @@ class Peoples extends Component {
             })
             .catch((error) => errorModalCreate(error.message));
     };
+
+    formatPeople = () => {
+        const { data } = this.state;
+        let newData = data.map(item => {
+            return {
+                _id: item._id,
+                fullName: `${item.secondName} ${item.secondName} ${item.midleName !== undefined ? item.midleName : ''}`,
+                rank: item.rank.name,
+                position: item.position
+            }
+        });
+        this.setState({formatedData: newData})
+    }
 
     setData = (data) => {
         this.setState({ data })
@@ -100,20 +107,20 @@ class Peoples extends Component {
     };
 
     render() {
-        const { data, columns, loading, adminColumns, editbleData, modalVisible, mode } = this.state;
+        const { data, columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData } = this.state;
         const { role } = this.props;
         const { Content } = Layout;
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <h1>Сотрудники</h1>
-                {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
+                <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>
                 <Table
-                    dataSource={data}
+                    dataSource={formatedData}
                     columns={getRole(role) === 'admin' ? adminColumns : columns}
                     loading={loading}
                     rowKey={(record) => record._id}
                 />
-                {getRole(role) === 'admin' && <Modal
+                <Modal
                     visible={modalVisible}
                     onCancel={this.closeModal}
                     footer={false}
@@ -126,7 +133,7 @@ class Peoples extends Component {
                         squadId={this.props.location.pathname.split('/')[1]}
                         stationId={this.props.location.pathname.split('/')[2]}
                     />
-                </Modal>}
+                </Modal>
             </Content>
         );
     };

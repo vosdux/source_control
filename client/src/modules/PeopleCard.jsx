@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { getAccessToken } from '../helpers/Utils';
-import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon, Card, Row, Typography, Menu } from 'antd';
+import { Layout, Modal, Icon, Menu, Tabs } from 'antd';
 import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
-import { Layout } from 'antd';
+import Statistic from '../components/Statistic';
+import ProfileCard from '../components/ProfileCard';
+import { getAccessToken } from '../helpers/Utils';
+import { errorModalCreate } from '../helpers/Modals';
 
 class PeopleCard extends Component {
     constructor(props) {
@@ -59,8 +60,8 @@ class PeopleCard extends Component {
     openPropertyModal = (name) => {
         const { data } = this.state
         let result = [];
-        data && data.property.forEach(item => {
-            if (item.name === name) {
+        data.people.propertyes.forEach(item => {
+            if (item.property.name === name) {
                 result.push(item);
             }
         });
@@ -68,15 +69,14 @@ class PeopleCard extends Component {
     };
 
     closePropertyModal = () => {
-        this.setState({propertyModalVisible: false});
+        this.setState({ propertyModalVisible: false });
     };
 
     render() {
         const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle } = this.state;
-        const { Title, Text } = Typography;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
-        console.log(this.state.data)
+        const { TabPane } = Tabs;
         return (
             <>
                 <Sider width={200} style={{ background: '#fff' }}>
@@ -91,7 +91,7 @@ class PeopleCard extends Component {
                                 <span>
                                     <Icon type="user" />
                                     Имущество
-                                        </span>
+                                </span>
                             }
                         >
                             {norm && norm[0].properties.map(item => <Menu.Item
@@ -99,35 +99,44 @@ class PeopleCard extends Component {
                                 onClick={() => this.openPropertyModal(item.name)}
                             >{item.name}</Menu.Item>)}
                         </SubMenu>
-
                     </Menu>
                 </Sider>
                 <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                    <Card loading={loading}>
-                        <Row type="flex">
-                            <Title className="mr-10px mb-2px">{people && people.name}</Title>
-                            <Title className="mt-0 mr-10px mb-2px">{people && people.secondName}</Title>
-                            <Title className="mt-0 mb-2px">{people && people.midleName}</Title>
-                        </Row>
-                        <Row>
-                            <Text className="rank">{people && people.position}</Text>
-                        </Row>
-                        <Row>
-                            <Text className="rank">{people && people.rank.name}</Text>
-                        </Row>
-                        <Row>
-                            <img src={people && people.upload} className="avatar" alt="" />
-                        </Row>
-                        <Row>
-                            <Button type="primary" icon="plus" onClick={this.openModal}>Добавить имущество</Button>
-                        </Row>
-                    </Card>
+                    <Tabs defaultActiveKey="1">
+                        <TabPane
+                            tab={
+                                <span>
+                                    <Icon type="profile" />
+                                    Профиль
+                                </span>
+                            }
+                            key="1"
+                        >
+                            <ProfileCard
+                                loading={loading}
+                                openModal={this.openModal}
+                                people={people}
+                            />
+                        </TabPane>
+                        <TabPane
+                            tab={
+                                <span>
+                                    <Icon type="solution" />
+                                    Статистика
+                                </span>
+                            }
+                            key="2"
+                        >
+                            <Statistic />
+                        </TabPane>
+                    </Tabs>
+
                     <Modal
                         title="Выдать имущество"
                         visible={modalVisible}
                         onCancel={this.closeModal}
-                        onOk={this.openModal}
                         footer={false}
+                        destroyOnClose={true}
                     >
                         <PropertyForm
                             properties={norm && norm[0].properties}
@@ -135,6 +144,7 @@ class PeopleCard extends Component {
                             squadId={this.props.location.pathname.split('/')[1]}
                             statioId={this.props.location.pathname.split('/')[2]}
                             closeModal={this.closeModal}
+                            getPeopleData={this.getPeopleData}
                         />
                     </Modal>
                     <Modal
@@ -143,7 +153,7 @@ class PeopleCard extends Component {
                         onCancel={this.closePropertyModal}
                         destroyOnClose={true}
                     >
-                        <PropertyList property={property}/>
+                        <PropertyList property={property} />
                     </Modal>
                 </Content>
             </>

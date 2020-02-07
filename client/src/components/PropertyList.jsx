@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { getAccessToken } from '../helpers/Utils';
-import { Table, Button, Modal } from 'antd';
-import { errorModalCreate } from '../helpers/Modals'
-import { getRole } from '../helpers/Utils';
-import SquadForm from '../components/AdminForms/SquadForm';
+import { Table, Icon } from 'antd';
+import moment from 'moment';
 
 class PropertyList extends Component {
     state = {
         columns: [
             {
                 title: 'Наименование',
-                dataIndex: 'name',
-                key: 'name'
+                dataIndex: 'property.name'
             },
             {
                 title: 'Дата выдачи',
-                dataIndex: 'date',
-                key: 'date'
+                dataIndex: 'date'
+            },
+            {
+                title: 'Срок службы',
+                dataIndex: 'lifeTime',
+                render: (text, record) => text === true ? <Icon type="check" style={{ color: '#00B75B', fontSize: '25px' }}/> : <Icon type="close" style={{ color: '#800000', fontSize: '25px' }}/>
             }
         ]
     };
@@ -31,8 +30,11 @@ class PropertyList extends Component {
         property.forEach(item => {
             let date = item.date && item.date.split('T')[0];
             item.date = date;
+            let lifeTimeEnd = moment(date).add(item.property.lifeTime, 'years');
+            let now = moment();
+            item.lifeTime = moment(lifeTimeEnd).isAfter(now);
         });
-        this.setState({convertedProperty: property})
+        this.setState({convertedProperty: property}, () => console.log(this.state.convertedProperty))
     }
 
     render() {

@@ -10,7 +10,9 @@ const schema = new Schema({
     upload: {type: String, required: false},
     propertyes: [{
         property: {type: Types.ObjectId, ref: 'Property', required: true},
-        date: {type: Date, required: true, default: Date.now}
+        date: {type: Date, required: true, default: Date.now},
+        _id: false,
+        __v: false
     }]
 });
 
