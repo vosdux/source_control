@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Icon } from 'antd';
+import { Table, Icon, Typography } from 'antd';
 import { isLifeTimeEnd } from '../helpers/Utils';
 
 class PropertyList extends Component {
@@ -14,6 +14,14 @@ class PropertyList extends Component {
                 dataIndex: 'date'
             },
             {
+                title: 'Кол-во',
+                dataIndex: 'count'
+            },
+            {
+                title: 'Необходимо',
+                dataIndex: 'countNorm'
+            },
+            {
                 title: 'Срок службы',
                 dataIndex: 'lifeTime',
                 render: (text, record) => text === true ? <Icon type="check" style={{ color: '#00B75B', fontSize: '25px' }}/> : <Icon type="close" style={{ color: '#800000', fontSize: '25px' }}/>
@@ -22,17 +30,32 @@ class PropertyList extends Component {
     };
 
     componentDidMount() {
-        this.convertDate()
+        this.getStatus()
     };
 
-    convertDate = () => {
+    getStatus = () => {
         const { property } = this.props;
-        let convertedProperty = isLifeTimeEnd(property)
-        this.setState({convertedProperty}, () => console.log(this.state.convertedProperty))
+        let convertedProperty = property.map(item => {
+            item.lifeTime = isLifeTimeEnd(item);
+            return item;
+        })
+        this.setState({convertedProperty})
     }
 
     render() {
         const { columns, convertedProperty } = this.state;
+        const { propertyCountNorm } = this.props;
+        const { Text } = Typography;
+        let givenCounter = 0;
+        convertedProperty && convertedProperty.forEach(item => {
+            if(item.lifeTime) {
+                ++givenCounter;
+            }
+        });
+        let complete = false;
+        if (givenCounter == propertyCountNorm) {
+            complete = true
+        }
         return (
             <>
                 <Table
@@ -40,6 +63,15 @@ class PropertyList extends Component {
                     columns={columns}
                     rowKey={record => record._id}
                 />
+                <div className='d-flex'>
+                    <Text className='card-text'>{`Выдано: ${givenCounter}`}</Text>
+                </div>
+                <div className="d-flex">
+                    <Text className='card-text'>{`Положено: ${propertyCountNorm}`}</Text>
+                </div>
+                <div className='d-flex'>
+                    <Text className='card-text mt-2'>{complete ? 'Укомплектован' : 'Неукомплектован'}</Text>
+                </div>
             </>
         );
     };

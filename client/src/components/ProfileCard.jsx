@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Card, Row, Typography } from 'antd';
+import profilePlaceholder from '../profile-placeholder.png';
 
 class ProfileCard extends Component {
     constructor(props) {
@@ -27,7 +28,7 @@ class ProfileCard extends Component {
                     <Text className="rank">{people && people.rank.name}</Text>
                 </Row>
                 <Row>
-                    <img src={people && people.upload} className="avatar" alt="" />
+                    <img src={people && people.upload ? people.upload : profilePlaceholder} className="avatar" alt="Аватар пользователя" />
                 </Row>
                 <Row>
                     <Button type="primary" icon="plus" onClick={this.props.openModal}>Добавить имущество</Button>

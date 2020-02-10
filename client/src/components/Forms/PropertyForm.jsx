@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Form, Button, Checkbox, DatePicker, Divider } from 'antd';
+import { Form, Button, Checkbox, DatePicker, Divider, InputNumber } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
 import { getAccessToken } from '../../helpers/Utils';
 import axios from 'axios';
@@ -46,6 +46,7 @@ class PForm extends Component {
                         if (values[value + '_date']) {
                             property.date = moment(values[value + '_date']).format('DD-MM-YYYY')
                         };
+                        property.count = values[value + '_count'];
                         result.push(property);
 
                     }
@@ -93,25 +94,40 @@ class PForm extends Component {
     render() {
         const { properties, form: { getFieldDecorator } } = this.props;
         const { checked } = this.state;
+        console.log(properties)
         return (
             <Form onSubmit={this.handleSubmit} className="property-form">
                 <h1>Выдать имущество</h1>
-                {properties.map(item => <Fragment key={item.fieldName}>
+                {properties.map(item => <Fragment key={item.property.fieldName}>
                     <Form.Item>
-                        {getFieldDecorator(item.fieldName, {})(
-                            <Checkbox onChange={(e) => this.handleCheckboxChange(e, item.fieldName)}>
-                                {item.name}
+                        {getFieldDecorator(item.property.fieldName, {})(
+                            <Checkbox onChange={(e) => this.handleCheckboxChange(e, item.property.fieldName)}>
+                                {item.property.name}
                             </Checkbox>,
                         )}
                     </Form.Item>
-                    {checked && checked[item.fieldName] && <Form.Item>
-                        {getFieldDecorator(item.fieldName + '_date', {})(
-                            <DatePicker
-                                placeholder='Выберите дату'
-                                disabledDate={this.disabledStartDate}
-                            />,
-                        )}
-                    </Form.Item>}
+                    {checked && checked[item.property.fieldName] && <>
+                        <Form.Item>
+                            {getFieldDecorator(item.property.fieldName + '_date', {})(
+                                <DatePicker
+                                    placeholder='Выберите дату'
+                                    disabledDate={this.disabledStartDate}
+                                />,
+                            )}
+                        </Form.Item>
+                        <Form.Item>
+                            {getFieldDecorator(item.property.fieldName + '_count', {
+                                initialValue: 1
+                            })(
+                                <InputNumber
+                                    placeholder='Количество'
+                                    min={1}
+                                    max={+item.count}
+
+                                />,
+                            )}
+                        </Form.Item>
+                    </>}
                     <Divider />
                 </Fragment>)}
 

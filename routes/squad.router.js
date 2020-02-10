@@ -126,7 +126,7 @@ router.get('/:squadId/:stationId', async (req, res) => {
 router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
         const people = await People.findById(req.params.peopleId).populate('rank').populate('propertyes.property').exec();
-        const norm = await Norm.find({ owners: { "$in": people.rank._id } }).populate('properties')
+        const norm = await Norm.findOne({ owners: { "$in": people.rank._id } }).populate('properties.property')
         res.json({ people, norm });
     } catch (error) {
         console.log(error);

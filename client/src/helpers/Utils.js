@@ -22,14 +22,12 @@ export const getRole = (roleId) => {
     }
 }
 
-export const isLifeTimeEnd = (property) => {
-    property.forEach(item => {
-        let date = item.date && item.date.split('T')[0];
-        item.date = date;
-        let lifeTimeEnd = moment(date).add(item.property.lifeTime, 'years');
-        let now = moment();
-        item.lifeTime = moment(lifeTimeEnd).isAfter(now);
-    });
+export const isLifeTimeEnd = (item) => {
+    let date = item.date && item.date.split('T')[0];
+    item.date = date;
+    let lifeTimeEnd = moment(date).add(item.property.lifeTime, 'years');
+    let now = moment();
+    let lifeTime = moment(lifeTimeEnd).isAfter(now);
 
-    return property;
+    return lifeTime;
 }

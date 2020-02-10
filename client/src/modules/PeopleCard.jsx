@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Layout, Modal, Icon, Menu, Tabs } from 'antd';
+import { Layout, Modal, Icon, Menu, Tabs, Spin } from 'antd';
 import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
 import Statistic from '../components/Statistic';
@@ -36,7 +36,7 @@ class PeopleCard extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data, loading: false }, () => this.statistic());
+                        this.setState({ data: data, loading: false });
 
                     } else {
                         console.log(response)
@@ -46,25 +46,25 @@ class PeopleCard extends Component {
             .catch((error) => errorModalCreate(error.message));
     };
 
-    statistic = () => {
-        const { data: { norm, people } } = this.state;
-        let property = [];
-        console.log(people)
-        if (people && people.propertyes) {
-            property = isLifeTimeEnd(people.propertyes);
-        }
+    // statistic = () => {
+    //     const { data: { norm, people } } = this.state;
+    //     let property = [];
+    //     console.log(people)
+    //     if (people && people.propertyes) {
+    //         property = isLifeTimeEnd(people.propertyes);
+    //     }
 
-        console.log(property);
-        let convertedProperty = [];
-        property.forEach(item => {
-            if (item.lifeTime) {
-                convertedProperty.push(item.property._id);
-            }
-        })
-        console.log(convertedProperty);
-        let disadvantage = norm[0].properties.filter(item => !~convertedProperty.indexOf(item._id));
-        this.setState({disadvantage});
-    }
+    //     console.log(property);
+    //     let convertedProperty = [];
+    //     property.forEach(item => {
+    //         if (item.lifeTime) {
+    //             convertedProperty.push(item.property._id);
+    //         }
+    //     })
+    //     console.log(convertedProperty);
+    //     let disadvantage = norm[0].properties.filter(item => !~convertedProperty.indexOf(item._id));
+    //     this.setState({disadvantage});
+    // }
 
     openModal = () => {
         this.setState({
@@ -78,7 +78,7 @@ class PeopleCard extends Component {
         })
     };
 
-    openPropertyModal = (name) => {
+    openPropertyModal = (name, propertyCountNorm) => {
         const { data } = this.state
         let result = [];
         data.people.propertyes.forEach(item => {
@@ -86,7 +86,7 @@ class PeopleCard extends Component {
                 result.push(item);
             }
         });
-        this.setState({ property: result, propertyModalVisible: true, propertyModalTitle: name });
+        this.setState({ property: result, propertyCountNorm, propertyModalVisible: true, propertyModalTitle: name });
     };
 
     closePropertyModal = () => {
@@ -94,7 +94,7 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage } = this.state;
+        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage, propertyCountNorm } = this.state;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
         const { TabPane } = Tabs;
@@ -115,10 +115,10 @@ class PeopleCard extends Component {
                                 </span>
                             }
                         >
-                            {norm && norm[0].properties.map(item => <Menu.Item
-                                key={item.fieldName}
-                                onClick={() => this.openPropertyModal(item.name)}
-                            >{item.name}</Menu.Item>)}
+                            {norm && norm.properties.map(item => <Menu.Item
+                                key={item.property.fieldName}
+                                onClick={() => this.openPropertyModal(item.property.name, item.count)}
+                            >{item.property.name}</Menu.Item>)}
                         </SubMenu>
                     </Menu>
                 </Sider>
@@ -162,7 +162,7 @@ class PeopleCard extends Component {
                         destroyOnClose={true}
                     >
                         <PropertyForm
-                            properties={norm && norm[0].properties}
+                            properties={norm && norm.properties}
                             peopleId={this.props.location.pathname.split('/')[3]}
                             squadId={this.props.location.pathname.split('/')[1]}
                             statioId={this.props.location.pathname.split('/')[2]}
@@ -175,8 +175,13 @@ class PeopleCard extends Component {
                         visible={propertyModalVisible}
                         onCancel={this.closePropertyModal}
                         destroyOnClose={true}
+                        width={1000}
+                        footer={false}
                     >
-                        <PropertyList property={property} />
+                        <PropertyList
+                            property={property}
+                            propertyCountNorm={propertyCountNorm}
+                        />
                     </Modal>
                 </Content>
             </>
