@@ -82,7 +82,7 @@ class PeopleCard extends Component {
         const { data } = this.state
         let result = [];
         data.people.propertyes.forEach(item => {
-            if (item.property.name === name) {
+            if (item.property && item.property.name === name) {
                 result.push(item);
             }
         });

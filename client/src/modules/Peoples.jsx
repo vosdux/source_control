@@ -3,9 +3,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { getAccessToken, getRole } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon } from 'antd';
+import { Table, Modal, Button, Icon, Tabs } from 'antd';
 import { connect } from 'react-redux';
 import PeopleForm from '../components/AdminForms/PeopleForm';
+import StatisticModule from '../components/Statistic';
 import { Layout } from 'antd';
 
 class Peoples extends Component {
@@ -58,13 +59,17 @@ class Peoples extends Component {
     }
 
     componentDidMount() {
-        this.getPeoples();
+        this.setState({
+            squadId: this.props.location.pathname.split('/')[1],
+            stationId: this.props.location.pathname.split('/')[2]
+        }, () => this.getPeoples());
     };
 
     getPeoples = () => {
+        const { squadId, stationId } = this.state;
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}`,
+            url: `http://localhost:5000/api/squad/${squadId}/${stationId}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -72,7 +77,7 @@ class Peoples extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.peoples, loading: false }, () => this.formatPeople() );
+                        this.setState({ data: data.peoples, loading: false }, () => this.formatPeople());
                     } else {
                         console.log(response)
                     }
@@ -91,7 +96,7 @@ class Peoples extends Component {
                 position: item.position
             }
         });
-        this.setState({formatedData: newData})
+        this.setState({ formatedData: newData })
     }
 
     setData = (data) => {
@@ -107,19 +112,46 @@ class Peoples extends Component {
     };
 
     render() {
-        const { data, columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData } = this.state;
+        const { data, columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData, squadId, stationId } = this.state;
         const { role } = this.props;
         const { Content } = Layout;
+        const { TabPane } = Tabs;
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                <h1>Сотрудники</h1>
-                <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>
-                <Table
-                    dataSource={formatedData}
-                    columns={getRole(role) === 'admin' ? adminColumns : columns}
-                    loading={loading}
-                    rowKey={(record) => record._id}
-                />
+                <Tabs defaultActiveKey="1">
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="profile" />
+                                Профиль
+                                </span>
+                        }
+                        key="1"
+                    >
+                        <h1>Сотрудники</h1>
+                        <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>
+                        <Table
+                            dataSource={formatedData}
+                            columns={getRole(role) === 'admin' ? adminColumns : columns}
+                            loading={loading}
+                            rowKey={(record) => record._id}
+                        />
+                    </TabPane>
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="solution" />
+                                Статистика
+                                </span>
+                        }
+                        key="2"
+                    >
+                        <StatisticModule
+                            squadId={squadId}
+                            stationId={stationId}
+                        />
+                    </TabPane>
+                </Tabs>
                 <Modal
                     visible={modalVisible}
                     onCancel={this.closeModal}

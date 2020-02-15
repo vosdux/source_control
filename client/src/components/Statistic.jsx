@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { getAccessToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon, Card, Row, Typography, Menu, Tabs } from 'antd';
+import { Button, Col, Row, Statistic } from 'antd';
 
-class Statistic extends Component {
+class StatisticModule extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -13,37 +13,45 @@ class Statistic extends Component {
     }
 
     componentDidMount() {
+        this.getPeoples();
     };
 
-    getPeopleData = () => {
-        // axios({
-        //     method: 'get',
-        //     url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
-        //     headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        // })
-        //     .then((response) => {
-        //         if (response.status === 200) {
-        //             const { data } = response;
-        //             if (data) {
-        //                 console.log(data)
-        //                 this.setState({ data: data, loading: false });
-
-        //             } else {
-        //                 console.log(response)
-        //             }
-        //         }
-        //     })
-        //     .catch((error) => errorModalCreate(error.message));
+    getPeoples = () => {
+        const { squadId, stationId } = this.props;
+        axios({
+            method: 'get',
+            url: `http://localhost:5000/api/statistic/station/${stationId}`,
+            headers: { "Authorization": `Bearer ${getAccessToken()}` }
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    const { data } = response;
+                    if (data) {
+                        this.setState({data});
+                    } else {
+                        console.log(response)
+                    }
+                }
+            })
+            .catch((error) => errorModalCreate(error.message));
     };
 
     render() {
-        const { disadvantage } = this.props;
+        const { data } = this.state;
         return (
-            <>
-                TAB
-            </>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Statistic title="Всего людей" value={data && data.peoples} />
+                </Col>
+                <Col span={12}>
+                    <Statistic title="Account Balance (CNY)" value={112893} precision={2} />
+                    <Button style={{ marginTop: 16 }} type="primary">
+                        Recharge
+                    </Button>
+                </Col>
+            </Row>
         );
     };
 };
 
-export default Statistic;
+export default StatisticModule;
