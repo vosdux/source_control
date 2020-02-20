@@ -39,7 +39,7 @@ class PForm extends Component {
                 let result = [];
                 console.log(values)
                 for (let value in values) {
-                    if (values[value] && !values[value]._isAMomentObject && values[value]) ///нужно учесть поля count {
+                    if (values[value] && !values[value]._isAMomentObject && typeof values[value] !== 'number') {
                         let property = {};
                         console.log(properties)
                         console.log(value)
@@ -49,32 +49,33 @@ class PForm extends Component {
                         if (values[value + '_date']) {
                             property.date = moment(values[value + '_date']).format('DD-MM-YYYY')
                         };
-                        property.count = values[value + '_count'];
-                        result.push(property);
+                        for (let i = 0; i < values[value + '_count']; i++) {
+                            result.push(property);
+                        }
                     }
                 }
                 console.log(result);
-                // axios({
-                //     method: 'put',
-                //     url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}`,
-                //     data: {
-                //         result,
-                //     },
-                //     headers: { "Authorization": `Bearer ${getAccessToken()}` }
-                // })
-                //     .then(response => {
-                //         if (response.status === 200) {
-                //         } else {
-                //             console.log(response);
-                //         }
-                //     })
-                //     .catch(error => {
-                //         if (error.response !== undefined) {
-                //             errorModalCreate(error.response.data.message);
-                //         } else {
-                //             errorModalCreate(error);
-                //         }
-                //     });
+                axios({
+                    method: 'put',
+                    url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}`,
+                    data: {
+                        result,
+                    },
+                    headers: { "Authorization": `Bearer ${getAccessToken()}` }
+                })
+                    .then(response => {
+                        if (response.status === 200) {
+                        } else {
+                            console.log(response);
+                        }
+                    })
+                    .catch(error => {
+                        if (error.response !== undefined) {
+                            errorModalCreate(error.response.data.message);
+                        } else {
+                            errorModalCreate(error);
+                        }
+                    });
                 this.props.closeModal();
                 this.props.getPeopleData();
             }

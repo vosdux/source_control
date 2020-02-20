@@ -136,6 +136,7 @@ router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
 
 router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
     try {
+        console.log(req.body.result)
         req.body.result.forEach(async (item) => {
             let propertyes = {
                 property: item.property
