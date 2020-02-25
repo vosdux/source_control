@@ -12,33 +12,53 @@ const router = Router();
 
 router.get('/station/:id', async (req, res) => {
     try {
-        const peoples = await People.find({ station: req.params.id }, { rank: 1, propertyes: 1 }).populate('rank').populate('propertyes.property').exec();
+        let peoples = await People.find({ station: req.params.id }, { rank: 1, propertyes: 1 }).populate('rank');
+        peoples = JSON.parse(JSON.stringify(peoples));
         let okCounter = 0;
-        peoples.forEach(async item => {
-            let norm = await Norm.findById(item.rank.norm);
+        let disadvanteges = [];
+        let stat = [];
+        const userPromises = peoples.map(async item => {
+            let norm = await Norm.findById(item.rank.norm).populate('properties.property');
+            norm = JSON.parse(JSON.stringify(norm));
             let normArr = [];
             norm.properties.forEach(prop => {
                 for (let i = 0; i < prop.count; i++) {
                     normArr.push(prop.property)
                 }
             });
-            item.propertyes.forEach(elem => {
-                console.log(normArr)
-                console.log(elem.property._id)
-                let index = normArr.find(i => i == elem.property._id);
-                console.log(index)
+            console.log(normArr)
+            await item.propertyes.forEach(elem => {
+                let index = normArr.findIndex(i => i._id === elem.property)
+                if (index !== -1) {
+                    let date = elem.date.split('T')[0];
+                    let lifeTimeEnd = moment(date).add(normArr[index].lifeTime, 'years');
+                    let now = moment();
+                    let lifeTime = moment(lifeTimeEnd).isAfter(now);
+                    console.log(lifeTime)
+                    if (lifeTime) {
+                        normArr.splice(index, 1);
+                    }
+                }
             });
-            if (norm.length > 0) {
+            if (normArr.length === 0) {
                 okCounter++;
             }
+            disadvanteges.push(...normArr)
+            return true;
         });
-
-        // peoples.forEach(item => {
-        //     item.propertyes.forEach(property => {
-
-        //     })
-        // })
-        res.json({ peoples: peoples.length, okPeoples: okCounter });
+        await Promise.all(userPromises);
+        disadvanteges.forEach((item, index) => {
+            if (stat.some(el => el.title === item.name) === false) {
+                let arr = disadvanteges.filter(elem => elem.name === item.name);
+                console.log(arr);
+                stat.push({
+                    title: item.name,
+                    count: arr.length
+                });
+            }
+            
+        })
+        res.json({ peoples: peoples.length, okPeoples: okCounter, stat });
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Что-то пошло не так' });

@@ -84,7 +84,7 @@ class AdminForm extends Component {
                             const { data } = response;
                             console.log(data)
                             if (data) {
-                                this.props.setData(data.squads);
+                                this.props.getPeoples();
                             }
                         } else {
                             console.log(response);

@@ -2,13 +2,23 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { getAccessToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Button, Col, Row, Statistic } from 'antd';
+import { Button, Col, Row, Statistic, Table } from 'antd';
 
 class StatisticModule extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
+            columns: [
+                {
+                    title: 'Наименование',
+                    dataIndex: 'title'
+                },
+                {
+                    title: 'Количество',
+                    dataIndex: 'count'
+                }
+            ],
+            loading: true
         }
     }
 
@@ -27,29 +37,42 @@ class StatisticModule extends Component {
                 if (response.status === 200) {
                     const { data } = response;
                     if (data) {
-                        this.setState({data});
+                        this.setState({ data, loading: false });
                     } else {
                         console.log(response)
                     }
                 }
             })
-            .catch((error) => errorModalCreate(error.message));
+            .catch((error) => {
+                this.setState({ loading: false}, () => errorModalCreate(error.message))
+            });
     };
 
     render() {
-        const { data } = this.state;
+        const { data, columns, loading } = this.state;
+        console.log(data && data.stat)
         return (
-            <Row gutter={16}>
-                <Col span={12}>
-                    <Statistic title="Всего людей" value={data && data.peoples} />
-                </Col>
-                <Col span={12}>
-                    <Statistic title="Account Balance (CNY)" value={112893} precision={2} />
-                    <Button style={{ marginTop: 16 }} type="primary">
-                        Recharge
+            <>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Statistic title="Всего людей" value={data && data.peoples} />
+                    </Col>
+                    <Col span={12}>
+                        <Statistic title="Полностью укомплектовано" value={data && data.okPeoples} />
+                        <Button style={{ marginTop: 16 }} type="primary">
+                            Перерасчет
                     </Button>
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
+                <Row className='mt-2'>
+                    <h1>Нехватка</h1>
+                    <Table
+                        loading={loading}
+                        columns={columns}
+                        dataSource={data && data.stat}
+                    />
+                </Row>
+            </>
         );
     };
 };

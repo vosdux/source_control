@@ -4,6 +4,7 @@ import { errorModalCreate } from '../../helpers/Modals';
 import { getAccessToken } from '../../helpers/Utils';
 import axios from 'axios';
 import moment from 'moment';
+import * as fs from 'fs';
 
 class PForm extends Component {
     state = {
@@ -31,11 +32,43 @@ class PForm extends Component {
         }
     };
 
+    giveProperty = (result) => {
+        const { squadId, stationId, peopleId, isDocumentModal } = this.props;
+        let url = `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}`;
+        let method = 'put';
+        if (isDocumentModal) {
+            url = `http://localhost:5000/api/document-creator`;
+            method = 'get';
+        }
+        axios({
+            method,
+            url,
+            data: {
+                result,
+            },
+            headers: { "Authorization": `Bearer ${getAccessToken()}` }
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    
+                } else {
+                    console.log(response);
+                }
+            })
+            .catch(error => {
+                if (error.response !== undefined) {
+                    errorModalCreate(error.response.data.message);
+                } else {
+                    errorModalCreate(error);
+                }
+            });
+    };
+
     handleSubmit = e => {
+        const { isDocumentModal, properties } = this.props;
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                const { properties, squadId, stationId, peopleId } = this.props;
                 let result = [];
                 console.log(values)
                 for (let value in values) {
@@ -55,29 +88,10 @@ class PForm extends Component {
                     }
                 }
                 console.log(result);
-                axios({
-                    method: 'put',
-                    url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}`,
-                    data: {
-                        result,
-                    },
-                    headers: { "Authorization": `Bearer ${getAccessToken()}` }
-                })
-                    .then(response => {
-                        if (response.status === 200) {
-                        } else {
-                            console.log(response);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.response !== undefined) {
-                            errorModalCreate(error.response.data.message);
-                        } else {
-                            errorModalCreate(error);
-                        }
-                    });
+
+                this.giveProperty(result);
                 this.props.closeModal();
-                this.props.getPeopleData();
+                !isDocumentModal && this.props.getPeopleData();
             }
         });
     };
@@ -95,12 +109,11 @@ class PForm extends Component {
     };
 
     render() {
-        const { properties, form: { getFieldDecorator } } = this.props;
+        const { properties, form: { getFieldDecorator }, isDocumentModal } = this.props;
         const { checked } = this.state;
         console.log(properties)
         return (
             <Form onSubmit={this.handleSubmit} className="property-form">
-                <h1>Выдать имущество</h1>
                 {properties.map(item => <Fragment key={item.property.fieldName}>
                     <Form.Item>
                         {getFieldDecorator(item.property.fieldName, {})(

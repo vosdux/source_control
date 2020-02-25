@@ -66,9 +66,10 @@ class PeopleCard extends Component {
     //     this.setState({disadvantage});
     // }
 
-    openModal = () => {
+    openModal = (isDocumentModal) => {
         this.setState({
-            modalVisible: true
+            modalVisible: true,
+            isDocumentModal
         });
     };
 
@@ -94,7 +95,7 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage, propertyCountNorm } = this.state;
+        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage, propertyCountNorm, isDocumentModal } = this.state;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
         const { TabPane } = Tabs;
@@ -155,7 +156,7 @@ class PeopleCard extends Component {
                     </Tabs>
 
                     <Modal
-                        title="Выдать имущество"
+                        title={isDocumentModal ? "Выдать накладную": "Выдать имущество"}
                         visible={modalVisible}
                         onCancel={this.closeModal}
                         footer={false}
@@ -168,6 +169,7 @@ class PeopleCard extends Component {
                             statioId={this.props.location.pathname.split('/')[2]}
                             closeModal={this.closeModal}
                             getPeopleData={this.getPeopleData}
+                            isDocumentModal={isDocumentModal}
                         />
                     </Modal>
                     <Modal

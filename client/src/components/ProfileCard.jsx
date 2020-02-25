@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Card, Row, Typography } from 'antd';
+import { Button, Card, Row, Typography, Col } from 'antd';
 import profilePlaceholder from '../profile-placeholder.png';
 
 class ProfileCard extends Component {
@@ -31,7 +31,10 @@ class ProfileCard extends Component {
                     <img src={people && people.upload ? people.upload : profilePlaceholder} className="avatar" alt="Аватар пользователя" />
                 </Row>
                 <Row>
-                    <Button type="primary" icon="plus" onClick={this.props.openModal}>Добавить имущество</Button>
+                    <Button type="primary" icon="plus" onClick={() => this.props.openModal(true)}>Выдать накладную</Button>
+                </Row>
+                <Row className='mt-2'>
+                    <Button type="default" icon="plus" onClick={() => this.props.openModal(false)}>Добавить имущество</Button>
                 </Row>
             </Card>
         );

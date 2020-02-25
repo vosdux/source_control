@@ -97,10 +97,6 @@ class Peoples extends Component {
             }
         });
         this.setState({ formatedData: newData })
-    }
-
-    setData = (data) => {
-        this.setState({ data })
     };
 
     openModal = (mode) => {
@@ -164,6 +160,7 @@ class Peoples extends Component {
                         editbleData={editbleData}
                         squadId={this.props.location.pathname.split('/')[1]}
                         stationId={this.props.location.pathname.split('/')[2]}
+                        getPeoples={this.getPeoples}
                     />
                 </Modal>
             </Content>

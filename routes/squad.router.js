@@ -38,6 +38,7 @@ router.get('/', async (req, res) => {
         let squads = await Squad.find();
         res.json({ squads })
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: 'Что-то пошло не так ' });
     }
 });
@@ -158,17 +159,16 @@ router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
 router.post('/:squadId/:stationId/', async (req, res) => {
     try {
         upload(req, res, err => {
-            if (err.code === 'LIMIT_FILE_SIZE') {
+            if (err && err.code === 'LIMIT_FILE_SIZE') {
                 throw new Error('Картинка не более 2мб')
             }
-            if (err.code === 'EXTENSION') {
+            if (err && err.code === 'EXTENSION') {
                 throw new Error('Только jpg или png')
             }
         });
 
         await People.create(req.body);
-        const peoples = await People.find({ station: req.params.stationId});
-        res.json({ peoples });
+        res.json({ message: 'Успех!' });
     } catch (error) {
         console.log(error.message);
         res.status(500).json({ message: 'Что-то пошло не так' });
