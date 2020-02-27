@@ -3,10 +3,11 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { getAccessToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon } from 'antd';
+import { Table, Modal, Button, Icon, Tabs } from 'antd';
 import { getRole } from '../helpers/Utils';
 import { connect } from 'react-redux';
 import StationForm from '../components/AdminForms/StationForm';
+import StatisticModule from '../components/Statistic';
 import { Layout } from 'antd';
 
 class Stations extends Component {
@@ -42,7 +43,7 @@ class Stations extends Component {
                 {
                     title: '',
                     key: 'edit',
-                    render: (text, record) => <Icon type="edit" onClick={() => {this.openModal('edit'); this.setState({editbleData: record})}} />
+                    render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
                 },
                 {
                     title: '',
@@ -56,13 +57,14 @@ class Stations extends Component {
     }
 
     componentDidMount() {
-        this.getStations();
+        this.setState({squadId: this.props.location.pathname.split('/')[1]}, () => this.getStations())
     };
 
     getStations = () => {
+        const { squadId } = this.state;
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}`,
+            url: `http://localhost:5000/api/squad/${squadId}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -70,7 +72,7 @@ class Stations extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.stations, loading: false});
+                        this.setState({ data: data.stations, loading: false });
                     } else {
                         console.log(response)
                     }
@@ -80,9 +82,10 @@ class Stations extends Component {
     };
 
     deleteItem = (id) => {
+        const { squadId } = this.state;
         axios({
             method: 'delete',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${id}`,
+            url: `http://localhost:5000/api/squad/${squadId}/${id}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` },
         })
             .then((response) => {
@@ -99,31 +102,57 @@ class Stations extends Component {
     };
 
     setData = (data) => {
-        this.setState({data})
+        this.setState({ data })
     };
 
     openModal = (mode) => {
-        this.setState({mode, modalVisible: true});
+        this.setState({ mode, modalVisible: true });
     };
 
     closeModal = () => {
-        this.setState({modalVisible: false});
+        this.setState({ modalVisible: false });
     };
 
     render() {
-        const { data, columns, loading, modalVisible, mode, editbleData, adminColumns } = this.state;
+        const { data, columns, loading, modalVisible, mode, editbleData, adminColumns, squadId } = this.state;
         const { role, location: { pathname } } = this.props;
         const { Content } = Layout;
+        const { TabPane } = Tabs;
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                <h1>Пожарные части</h1>
-                {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
-                <Table
-                    dataSource={data}
-                    columns={getRole(role) === 'admin' ? adminColumns : columns}
-                    loading={loading}
-                    rowKey={(record) => record._id}
-                />
+                <Tabs defaultActiveKey="1">
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="profile" />
+                                Профиль
+                                </span>
+                        }
+                        key="1"
+                    >
+                        <h1>Пожарные части</h1>
+                        {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
+                        <Table
+                            dataSource={data}
+                            columns={getRole(role) === 'admin' ? adminColumns : columns}
+                            loading={loading}
+                            rowKey={(record) => record._id}
+                        />
+                    </TabPane>
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="solution" />
+                                Статистика
+                                </span>
+                        }
+                        key="2"
+                    >
+                        <StatisticModule
+                            squadId={squadId}
+                        />
+                    </TabPane>
+                </Tabs>
                 {getRole(role) === 'admin' && <Modal
                     visible={modalVisible}
                     onCancel={this.closeModal}
@@ -134,7 +163,7 @@ class Stations extends Component {
                         closeModal={this.closeModal}
                         mode={mode}
                         editbleData={editbleData}
-                        squadId={pathname.split('/')[1]}
+                        squadId={squadId}
                     />
                 </Modal>}
             </Content>
@@ -144,7 +173,7 @@ class Stations extends Component {
 
 const mapStateToProps = (state) => {
     const { role } = state;
-    return {role};
+    return { role };
 }
 
 export default connect(mapStateToProps)(Stations);

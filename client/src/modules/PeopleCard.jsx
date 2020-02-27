@@ -35,7 +35,6 @@ class PeopleCard extends Component {
                 if (response.status === 200) {
                     const { data } = response;
                     if (data) {
-                        console.log(data)
                         this.setState({ data: data, loading: false });
 
                     } else {
@@ -46,25 +45,25 @@ class PeopleCard extends Component {
             .catch((error) => errorModalCreate(error.message));
     };
 
-    // statistic = () => {
-    //     const { data: { norm, people } } = this.state;
-    //     let property = [];
-    //     console.log(people)
-    //     if (people && people.propertyes) {
-    //         property = isLifeTimeEnd(people.propertyes);
-    //     }
+    discardProperty = () => {
+        axios({
+            method: 'put',
+            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}/discard`,
+            headers: { "Authorization": `Bearer ${getAccessToken()}` }
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    const { data } = response;
+                    if (data) {
+                        this.setState({ data: data, loading: false });
 
-    //     console.log(property);
-    //     let convertedProperty = [];
-    //     property.forEach(item => {
-    //         if (item.lifeTime) {
-    //             convertedProperty.push(item.property._id);
-    //         }
-    //     })
-    //     console.log(convertedProperty);
-    //     let disadvantage = norm[0].properties.filter(item => !~convertedProperty.indexOf(item._id));
-    //     this.setState({disadvantage});
-    // }
+                    } else {
+                        console.log(response)
+                    }
+                }
+            })
+            .catch((error) => errorModalCreate(error.message));
+    };
 
     openModal = (isDocumentModal) => {
         this.setState({
@@ -149,9 +148,7 @@ class PeopleCard extends Component {
                             }
                             key="2"
                         >
-                            <Statistic
-                                disadvantage={disadvantage}
-                            />
+                            Здесь что-то будет(но это не точно)
                         </TabPane>
                     </Tabs>
 

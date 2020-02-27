@@ -38,8 +38,8 @@
     font-size: 25px;
 }
 .error {
-    color: red;
+    color: red!important;
 }
 .success {
-    color: green;
+    color: green!important;
 }

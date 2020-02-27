@@ -121,23 +121,12 @@ class AdminForm extends Component {
         const uploadButton = (
             <div>
                 <Icon type={loading ? 'loading' : 'plus'} />
-                <div className="ant-upload-text">Upload</div>
+                <div className="ant-upload-text">Загрузить</div>
             </div>
         );
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
-                <h1>Создание отряда</h1>
-                <Form.Item>
-                    {getFieldDecorator('name', {
-                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
-                        initialValue: mode === 'edit' ? editbleData.name : ''
-                    })(
-                        <Input
-                            prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            placeholder="Имя"
-                        />,
-                    )}
-                </Form.Item>
+                <h1>Создание карточки сотрудника</h1>
                 <Form.Item>
                     {getFieldDecorator('secondName', {
                         rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
@@ -146,6 +135,17 @@ class AdminForm extends Component {
                         <Input
                             prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             placeholder="Фамилия"
+                        />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('name', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.name : ''
+                    })(
+                        <Input
+                            prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            placeholder="Имя"
                         />,
                     )}
                 </Form.Item>

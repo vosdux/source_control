@@ -11,6 +11,7 @@ const schema = new Schema({
     propertyes: [{
         property: {type: Types.ObjectId, ref: 'Property', required: true},
         date: {type: Date, required: true, default: Date.now},
+        discarded: {type: Boolean, default: false},
         _id: false,
         __v: false
     }]

@@ -34,7 +34,7 @@ class PForm extends Component {
 
     giveProperty = (result) => {
         const { squadId, stationId, peopleId, isDocumentModal } = this.props;
-        let url = `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}`;
+        let url = `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}/add-property`;
         let method = 'put';
         if (isDocumentModal) {
             url = `http://localhost:5000/api/document-creator`;
@@ -50,7 +50,7 @@ class PForm extends Component {
         })
             .then(response => {
                 if (response.status === 200) {
-                    
+
                 } else {
                     console.log(response);
                 }

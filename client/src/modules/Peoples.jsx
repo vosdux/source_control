@@ -67,6 +67,7 @@ class Peoples extends Component {
 
     getPeoples = () => {
         const { squadId, stationId } = this.state;
+        this.setState({loading: true});
         axios({
             method: 'get',
             url: `http://localhost:5000/api/squad/${squadId}/${stationId}`,
@@ -143,7 +144,6 @@ class Peoples extends Component {
                         key="2"
                     >
                         <StatisticModule
-                            squadId={squadId}
                             stationId={stationId}
                         />
                     </TabPane>

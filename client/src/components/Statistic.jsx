@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { getAccessToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Button, Col, Row, Statistic, Table } from 'antd';
+import { Button, Col, Row, Statistic, Table, Spin } from 'antd';
 
 class StatisticModule extends Component {
     constructor(props) {
@@ -23,14 +23,20 @@ class StatisticModule extends Component {
     }
 
     componentDidMount() {
-        this.getPeoples();
+        this.getStatistic();
     };
 
-    getPeoples = () => {
+    getStatistic = () => {
         const { squadId, stationId } = this.props;
+        let url;
+        if (stationId) {
+            url = `http://localhost:5000/api/statistic/station/${stationId}`
+        } else if (squadId) {
+            url = `http://localhost:5000/api/statistic/squad/${squadId}`
+        }
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/statistic/station/${stationId}`,
+            url,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -55,10 +61,11 @@ class StatisticModule extends Component {
             <>
                 <Row gutter={16}>
                     <Col span={12}>
-                        <Statistic title="Всего людей" value={data && data.peoples} />
+                        {loading ? <Spin size="large" /> : <Statistic title="Всего людей" value={data && data.peoples} />}
+
                     </Col>
                     <Col span={12}>
-                        <Statistic title="Полностью укомплектовано" value={data && data.okPeoples} />
+                        {loading ? <Spin size="large" /> : <Statistic title="Полностью укомплектовано" value={data && data.okPeoples} />}
                         <Button style={{ marginTop: 16 }} type="primary">
                             Перерасчет
                     </Button>

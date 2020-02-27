@@ -14,17 +14,12 @@ class PropertyList extends Component {
                 dataIndex: 'date'
             },
             {
-                title: 'Кол-во',
-                dataIndex: 'count'
-            },
-            {
-                title: 'Необходимо',
-                dataIndex: 'countNorm'
-            },
-            {
                 title: 'Срок службы',
                 dataIndex: 'lifeTime',
                 render: (text, record) => text === true ? <Icon type="check" style={{ color: '#00B75B', fontSize: '25px' }}/> : <Icon type="close" style={{ color: '#800000', fontSize: '25px' }}/>
+            },
+            {
+                render: () => <span>Списать</span>
             }
         ]
     };
@@ -70,7 +65,8 @@ class PropertyList extends Component {
                     <Text className='card-text'>{`Положено: ${propertyCountNorm}`}</Text>
                 </div>
                 <div className='d-flex'>
-                    <Text className='card-text mt-2'>{complete ? 'Укомплектован' : 'Неукомплектован'}</Text>
+                    {complete ? <Text strong className='card-text mt-2 success'>Укомплектован</Text> :
+                        <Text strong className='card-text mt-2 error'>Неукомплектован</Text>}
                 </div>
             </>
         );
