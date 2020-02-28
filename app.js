@@ -10,6 +10,7 @@ app.use(bodyParser({limit: '50mb'}));
 app.use(cors());
 app.use('/api/auth', require('./routes/auth.router'));
 app.use('/api/squad', require('./routes/squad.router'));
+app.use('/api/property', require('./routes/property.router'));
 app.use('/api/statistic', require('./routes/statistic.router'));
 app.use('/api/document-creator', require('./routes/document.router'));
 app.use('/api/rank', require('./routes/rank.router'));

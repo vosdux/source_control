@@ -41,7 +41,7 @@ router.get('/squad/:id', async (req, res) => {
                         let now = moment();
                         let lifeTime = moment(lifeTimeEnd).isAfter(now);
                         console.log(lifeTime)
-                        if (lifeTime) {
+                        if (lifeTime && !elem.discarded) {
                             normArr.splice(index, 1);
                         }
                     }
@@ -103,7 +103,7 @@ router.get('/station/:id', async (req, res) => {
                     let now = moment();
                     let lifeTime = moment(lifeTimeEnd).isAfter(now);
                     console.log(lifeTime)
-                    if (lifeTime) {
+                    if (lifeTime && !elem.discarded) {
                         normArr.splice(index, 1);
                     }
                 }

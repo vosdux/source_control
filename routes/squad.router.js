@@ -135,48 +135,6 @@ router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
     }
 });
 
-router.put('/:squadId/:stationId/:peopleId/add-property', async (req, res) => {
-    try {
-        console.log(req.body.result)
-        req.body.result.forEach(async (item) => {
-            let propertyes = {
-                property: item.property
-            };
-
-            if (item.date) {
-                propertyes.date = item.date;
-            }
-
-            await People.updateOne( { _id: req.params.peopleId } , { $push: { propertyes } } );
-        })
-        res.json({ message: 'Успех!' });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Что-то пошло не так' });
-    }
-});
-
-router.put('/:squadId/:stationId/:peopleId/discard', async (req, res) => {
-    try {
-        console.log(req.body.result)
-        req.body.result.forEach(async (item) => {
-            let propertyes = {
-                property: item.property
-            };
-
-            if (item.date) {
-                propertyes.date = item.date;
-            }
-
-            await People.updateOne( { _id: req.params.peopleId } , { $push: { propertyes } } );
-        })
-        res.json({ message: 'Успех!' });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Что-то пошло не так' });
-    }
-});
-
 router.post('/:squadId/:stationId/', async (req, res) => {
     try {
         upload(req, res, err => {

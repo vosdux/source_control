@@ -33,8 +33,8 @@ class PForm extends Component {
     };
 
     giveProperty = (result) => {
-        const { squadId, stationId, peopleId, isDocumentModal } = this.props;
-        let url = `http://localhost:5000/api/squad/${squadId}/${stationId}/${peopleId}/add-property`;
+        const { peopleId, isDocumentModal } = this.props;
+        let url = `http://localhost:5000/api/property/${peopleId}/add-property`;
         let method = 'put';
         if (isDocumentModal) {
             url = `http://localhost:5000/api/document-creator`;
@@ -50,7 +50,7 @@ class PForm extends Component {
         })
             .then(response => {
                 if (response.status === 200) {
-
+                    !isDocumentModal && this.props.getPeopleData();
                 } else {
                     console.log(response);
                 }
@@ -80,7 +80,8 @@ class PForm extends Component {
                         console.log(res)
                         property.property = res && res.property._id
                         if (values[value + '_date']) {
-                            property.date = moment(values[value + '_date']).format('DD-MM-YYYY')
+                            property.date = moment(values[value + '_date']).format('YYYY-MM-DD')
+                            console.log(property.date)
                         };
                         for (let i = 0; i < values[value + '_count']; i++) {
                             result.push(property);
@@ -91,7 +92,6 @@ class PForm extends Component {
 
                 this.giveProperty(result);
                 this.props.closeModal();
-                !isDocumentModal && this.props.getPeopleData();
             }
         });
     };

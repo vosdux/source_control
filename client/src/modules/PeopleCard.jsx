@@ -4,6 +4,7 @@ import { Layout, Modal, Icon, Menu, Tabs, Spin } from 'antd';
 import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
 import Statistic from '../components/Statistic';
+import Dismissal from '../components/Dismissal';
 import ProfileCard from '../components/ProfileCard';
 import { getAccessToken, isLifeTimeEnd } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
@@ -13,7 +14,6 @@ class PeopleCard extends Component {
         super(props);
         this.state = {
             data: [],
-            loading: true,
             modalVisible: false,
             propertyModalVisible: false,
             propertyModalTitle: '',
@@ -26,6 +26,7 @@ class PeopleCard extends Component {
     };
 
     getPeopleData = () => {
+        this.setState({loading: true})
         axios({
             method: 'get',
             url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
@@ -35,6 +36,7 @@ class PeopleCard extends Component {
                 if (response.status === 200) {
                     const { data } = response;
                     if (data) {
+                        console.log(data)
                         this.setState({ data: data, loading: false });
 
                     } else {
@@ -45,16 +47,18 @@ class PeopleCard extends Component {
             .catch((error) => errorModalCreate(error.message));
     };
 
-    discardProperty = () => {
+    archivedPeople = () => {
+        this.setState({loading: true})
         axios({
-            method: 'put',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}/discard`,
+            method: 'get',
+            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
                 if (response.status === 200) {
                     const { data } = response;
                     if (data) {
+                        console.log(data)
                         this.setState({ data: data, loading: false });
 
                     } else {
@@ -63,7 +67,7 @@ class PeopleCard extends Component {
                 }
             })
             .catch((error) => errorModalCreate(error.message));
-    };
+    }
 
     openModal = (isDocumentModal) => {
         this.setState({
@@ -78,7 +82,7 @@ class PeopleCard extends Component {
         })
     };
 
-    openPropertyModal = (name, propertyCountNorm) => {
+    openPropertyModal = (name, propertyCountNorm, propertyId) => {
         const { data } = this.state
         let result = [];
         data.people.propertyes.forEach(item => {
@@ -86,7 +90,7 @@ class PeopleCard extends Component {
                 result.push(item);
             }
         });
-        this.setState({ property: result, propertyCountNorm, propertyModalVisible: true, propertyModalTitle: name });
+        this.setState({ property: result, propertyCountNorm, propertyModalVisible: true, propertyModalTitle: name, propertyId });
     };
 
     closePropertyModal = () => {
@@ -94,7 +98,17 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { data: { people, norm }, loading, modalVisible, propertyModalVisible, property, propertyModalTitle, disadvantage, propertyCountNorm, isDocumentModal } = this.state;
+        const { 
+            data: { people, norm }, 
+            loading, modalVisible, 
+            propertyModalVisible, 
+            property, 
+            propertyModalTitle, 
+            disadvantage, 
+            propertyCountNorm, 
+            isDocumentModal,
+            propertyId
+        } = this.state;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
         const { TabPane } = Tabs;
@@ -117,7 +131,7 @@ class PeopleCard extends Component {
                         >
                             {norm && norm.properties.map(item => <Menu.Item
                                 key={item.property.fieldName}
-                                onClick={() => this.openPropertyModal(item.property.name, item.count)}
+                                onClick={() => this.openPropertyModal(item.property.name, item.count, item.property._id)}
                             >{item.property.name}</Menu.Item>)}
                         </SubMenu>
                     </Menu>
@@ -150,6 +164,20 @@ class PeopleCard extends Component {
                         >
                             Здесь что-то будет(но это не точно)
                         </TabPane>
+                        <TabPane
+                            tab={
+                                <span>
+                                    <Icon type="form" />
+                                    Уволить
+                                </span>
+                            }
+                            key="3"
+                        >
+                            <Dismissal 
+                                idcard={people && people.idcard}
+                                archivedPeople={this.archivedPeople}
+                            />
+                        </TabPane>
                     </Tabs>
 
                     <Modal
@@ -162,8 +190,6 @@ class PeopleCard extends Component {
                         <PropertyForm
                             properties={norm && norm.properties}
                             peopleId={this.props.location.pathname.split('/')[3]}
-                            squadId={this.props.location.pathname.split('/')[1]}
-                            statioId={this.props.location.pathname.split('/')[2]}
                             closeModal={this.closeModal}
                             getPeopleData={this.getPeopleData}
                             isDocumentModal={isDocumentModal}
@@ -178,8 +204,10 @@ class PeopleCard extends Component {
                         footer={false}
                     >
                         <PropertyList
+                            peopleId={this.props.location.pathname.split('/')[3]}
                             property={property}
                             propertyCountNorm={propertyCountNorm}
+                            propertyId={propertyId}
                         />
                     </Modal>
                 </Content>

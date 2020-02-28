@@ -17,4 +17,4 @@ const schema = new Schema({
     }]
 });
 
-module.exports = model('People', schema);
+module.exports = model('Archive', schema);

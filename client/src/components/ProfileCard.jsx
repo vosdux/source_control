@@ -28,6 +28,9 @@ class ProfileCard extends Component {
                     <Row>
                         <Text className="rank">{people && people.rank.name}</Text>
                     </Row>
+                    {/* <Row>
+                        <Text className="rank">{people && people.idcard}</Text>
+                    </Row> */}
                     <Row>
                         <img src={people && people.upload ? people.upload : profilePlaceholder} className="avatar" alt="Аватар пользователя" />
                     </Row>

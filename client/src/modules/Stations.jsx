@@ -125,8 +125,8 @@ class Stations extends Component {
                         tab={
                             <span>
                                 <Icon type="profile" />
-                                Профиль
-                                </span>
+                                Список
+                            </span>
                         }
                         key="1"
                     >
