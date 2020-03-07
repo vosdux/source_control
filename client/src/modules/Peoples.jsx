@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { getAccessToken, getRole } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon, Tabs } from 'antd';
+import { Table, Modal, Button, Icon, Tabs, Input } from 'antd';
 import { connect } from 'react-redux';
 import PeopleForm from '../components/AdminForms/PeopleForm';
 import StatisticModule from '../components/Statistic';
@@ -38,7 +38,7 @@ class Peoples extends Component {
                 },
                 {
                     title: 'Звание',
-                    dataIndex: 'rank',
+                    dataIndex: 'rank.name',
                 },
                 {
                     title: 'Должность',
@@ -48,13 +48,11 @@ class Peoples extends Component {
                     title: '',
                     key: 'edit',
                     render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
-                },
-                {
-                    title: '',
-                    key: 'delete',
-                    render: (text, record) => <Icon type="delete" onClick={() => this.deleteItem(record._id)} />
-                },
+                }
             ],
+            page: 0,
+            size: 10,
+            search: ''
         }
     }
 
@@ -66,11 +64,14 @@ class Peoples extends Component {
     };
 
     getPeoples = () => {
-        const { squadId, stationId } = this.state;
-        this.setState({loading: true});
+        const { page, size, squadId, stationId, search } = this.state;
+        let pageParam = `?page=${page}`;
+        let sizeParam = `&size=${size}`;
+        let searchParam = `&search=${search}`;
+        this.setState({ loading: true });
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/squad/${squadId}/${stationId}`,
+            url: `http://localhost:5000/api/squad/${squadId}/${stationId}${pageParam}${sizeParam}${searchParam}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -78,7 +79,11 @@ class Peoples extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.peoples, loading: false }, () => this.formatPeople());
+                        this.setState({
+                            data: data.peoples,
+                            loading: false,
+                            totalElements: data.totalElements
+                        }, () => this.formatPeople());
                     } else {
                         console.log(response)
                     }
@@ -91,10 +96,8 @@ class Peoples extends Component {
         const { data } = this.state;
         let newData = data.map(item => {
             return {
-                _id: item._id,
+                ...item,
                 fullName: `${item.secondName} ${item.secondName} ${item.midleName !== undefined ? item.midleName : ''}`,
-                rank: item.rank.name,
-                position: item.position
             }
         });
         this.setState({ formatedData: newData })
@@ -108,8 +111,20 @@ class Peoples extends Component {
         this.setState({ modalVisible: false });
     };
 
+    handleTableChange = (pagination) => {
+        this.setState({
+            loading: true,
+            size: pagination.pageSize,
+            page: --pagination.current,
+        }, () => this.getPeoples());
+    };
+
+    handleSearchChange = (value) => {
+        this.setState({ search: value }, () => this.getPeoples());
+    }
+
     render() {
-        const { data, columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData, squadId, stationId } = this.state;
+        const { columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData, stationId, totalElements } = this.state;
         const { role } = this.props;
         const { Content } = Layout;
         const { TabPane } = Tabs;
@@ -126,12 +141,24 @@ class Peoples extends Component {
                         key="1"
                     >
                         <h1>Сотрудники</h1>
-                        <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>
+                        <Input.Search
+                            className='mt-2'
+                            enterButton='Искать'
+                            placeholder='Введите фамилию'
+                            size='large'
+                            onSearch={value => this.handleSearchChange(value)}
+                        />
+                        <Button type='primary' icon="plus" className='mt-2' onClick={() => this.openModal('create')}>Добавить</Button>
                         <Table
                             dataSource={formatedData}
                             columns={getRole(role) === 'admin' ? adminColumns : columns}
                             loading={loading}
                             rowKey={(record) => record._id}
+                            onChange={this.handleTableChange}
+                            pagination={{
+                                showSizeChanger: true,
+                                total: totalElements
+                            }}
                         />
                     </TabPane>
                     <TabPane
@@ -152,6 +179,7 @@ class Peoples extends Component {
                     visible={modalVisible}
                     onCancel={this.closeModal}
                     footer={false}
+                    destroyOnClose={true}
                 >
                     <PeopleForm
                         setData={this.setData}

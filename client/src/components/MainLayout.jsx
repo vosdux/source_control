@@ -21,11 +21,15 @@ class MainLayout extends Component {
                     <Menu
                         theme="dark"
                         mode="horizontal"
-                        defaultSelectedKeys={['2']}
                         style={{ lineHeight: '64px' }}
                     >
                         <Menu.Item key="1">
                             <Link to={'/'}>Главная</Link>
+                        </Menu.Item>
+                        <Menu.Item key="2">
+                            <Link to={'/archive'}>Архив</Link>
+                        </Menu.Item><Menu.Item key="3">
+                            <Link to={'/archive'}>Нормы</Link>
                         </Menu.Item>
 
                     </Menu>

@@ -52,19 +52,23 @@ class Stations extends Component {
                 },
             ],
             loading: true,
-            modalVisible: false
+            modalVisible: false,
+            page: 10,
+            size: 0
         }
     }
 
     componentDidMount() {
-        this.setState({squadId: this.props.location.pathname.split('/')[1]}, () => this.getStations())
+        this.setState({ squadId: this.props.location.pathname.split('/')[1] }, () => this.getStations())
     };
 
     getStations = () => {
-        const { squadId } = this.state;
+        const { page, size, squadId } = this.state;
+        let pageParam = `?page=${page}`;
+        let sizeParam = `&size=${size}`;
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/squad/${squadId}`,
+            url: `http://localhost:5000/api/squad/${squadId}${pageParam}${sizeParam}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -72,7 +76,11 @@ class Stations extends Component {
                     const { data } = response;
                     if (data) {
                         console.log(data)
-                        this.setState({ data: data.stations, loading: false });
+                        this.setState({ 
+                            data: data.stations, 
+                            loading: false, 
+                            totalElements: data.totalElements
+                        });
                     } else {
                         console.log(response)
                     }
@@ -113,8 +121,16 @@ class Stations extends Component {
         this.setState({ modalVisible: false });
     };
 
+    handleTableChange = (pagination) => {
+        this.setState({
+            loading: true,
+            size: pagination.pageSize,
+            page: --pagination.current,
+        }, () => this.getStations());
+    };
+
     render() {
-        const { data, columns, loading, modalVisible, mode, editbleData, adminColumns, squadId } = this.state;
+        const { data, columns, loading, modalVisible, mode, editbleData, adminColumns, squadId, totalElements } = this.state;
         const { role, location: { pathname } } = this.props;
         const { Content } = Layout;
         const { TabPane } = Tabs;
@@ -137,6 +153,11 @@ class Stations extends Component {
                             columns={getRole(role) === 'admin' ? adminColumns : columns}
                             loading={loading}
                             rowKey={(record) => record._id}
+                            onChange={this.handleTableChange}
+                            pagination={{
+                                showSizeChanger: true,
+                                total: totalElements
+                            }}
                         />
                     </TabPane>
                     <TabPane

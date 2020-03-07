@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import Squads from './modules/Squads';
 import Peoples from './modules/Peoples';
 import Stations from './modules/Stations';
-import SquadForm from './components/AdminForms/SquadForm';
+import Archive from './components/Archive';
 import * as actions from './store/actions';
 import Auth from './modules/Auth/Auth';
 import MainLayout from './components/MainLayout';
@@ -54,6 +54,16 @@ class App extends Component {
               path='/'
               exact
               render={(props) => <Squads {...props} />}
+            />
+            <Route
+              path='/archive'
+              exact
+              render={(props) => <Archive {...props} />}
+            />
+            <Route
+              path='/archive/:id'
+              exact
+              render={(props) => <PeopleCard archived={true} {...props} />}
             />
             <Route
               path='/:id/:stationId/:peopleId'

@@ -17,4 +17,6 @@ const schema = new Schema({
     }]
 });
 
+schema.index({secondName: 'text'});
+
 module.exports = model('Archive', schema);

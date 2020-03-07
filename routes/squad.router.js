@@ -2,11 +2,12 @@ const { Router } = require('express');
 const Squad = require('../models/Squad');
 const Station = require('../models/Station');
 const People = require('../models/People');
-const Property = require('../models/Property');
+const Archive = require('../models/Archive');
 const Norm = require('../models/Norm');
 const Rank = require('../models/Rank');
 const multer = require('multer');
 const path = require('path');
+const auth = require('../middleware/auth.middleware');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -33,10 +34,10 @@ const upload = multer({
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
-        let squads = await Squad.find();
-        res.json({ squads })
+        let squads = await Squad.find().skip((req.query.size * req.query.page)).limit(+req.query.size).exec();
+        res.json({ squads, totalElements: squads.length })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Что-то пошло не так ' });
@@ -76,9 +77,8 @@ router.delete('/:squadId', async (req, res) => {
 
 router.get('/:squadId', async (req, res) => {
     try {
-        console.log('station')
-        const stations = await Station.find({ squad: req.params.squadId });
-        res.json({ stations });
+        const stations = await Station.find({ squad: req.params.squadId }).skip((req.query.size * req.query.page)).limit(+req.query.size).exec();
+        res.json({ stations, totalElements: stations.length });
     } catch (error) {
         console.log(error.message)
         res.status(500).json({ message: 'Что-то пошло не так' });
@@ -117,9 +117,19 @@ router.put('/:squadId/:stationId', async (req, res) => {
 
 router.get('/:squadId/:stationId', async (req, res) => {
     try {
-        const peoples = await People.find({ station: req.params.stationId}, {name: 1, secondName: 1, midleName: 1, rank: 1, position: 1}).populate('rank');
-        res.json({ peoples });
+        let findObj = {station: req.params.stationId};
+        if (req.query.search) {
+            findObj = { station: req.params.stationId, $text: { $search: req.query.search } };
+        }
+        const peoples = await People.find(findObj, { name: 1, secondName: 1, midleName: 1, rank: 1, position: 1, idcard: 1 })
+            .sort({ secondName: 1 })
+            .populate('rank')
+            .skip((req.query.size * req.query.page))
+            .limit(+req.query.size)
+            .exec();
+        res.json({ peoples, totalElements: peoples.length });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 });
@@ -129,6 +139,30 @@ router.get('/:squadId/:stationId/:peopleId', async (req, res) => {
         const people = await People.findById(req.params.peopleId).populate('rank').populate('propertyes.property').exec();
         const norm = await Norm.findOne({ owners: { "$in": people.rank._id } }).populate('properties.property')
         res.json({ people, norm });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Что-то пошло не так' });
+    }
+});
+
+router.put('/:squadId/:stationId/:peopleId', async (req, res) => {
+    try {
+        await People.findByIdAndUpdate(req.params.peopleId, { $set: req.body });
+        let people = await People.findById(req.params.peopleId);
+        res.json({ people });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Что-то пошло не так' });
+    }
+});
+
+router.delete('/:squadId/:stationId/:peopleId', async (req, res) => {
+    try {
+        let people = await People.findByIdAndRemove(req.params.peopleId);
+        people = JSON.parse(JSON.stringify(people));
+        delete people._id;
+        const arch = await Archive.create(people)
+        res.json({ message: 'Успех!', arch });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });

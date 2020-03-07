@@ -26,10 +26,14 @@ class PeopleCard extends Component {
     };
 
     getPeopleData = () => {
-        this.setState({loading: true})
+        this.setState({ loading: true });
+        let url = `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`
+        if (this.props.archived) {
+            url = `http://localhost:5000/api/archive/${this.props.location.pathname.split('/')[2]}`
+        }
         axios({
             method: 'get',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
+            url,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -48,9 +52,9 @@ class PeopleCard extends Component {
     };
 
     archivedPeople = () => {
-        this.setState({loading: true})
+        this.setState({ loading: true });
         axios({
-            method: 'get',
+            method: 'delete',
             url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
@@ -58,9 +62,7 @@ class PeopleCard extends Component {
                 if (response.status === 200) {
                     const { data } = response;
                     if (data) {
-                        console.log(data)
-                        this.setState({ data: data, loading: false });
-
+                        this.props.history.push(`http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/`)
                     } else {
                         console.log(response)
                     }
@@ -98,17 +100,18 @@ class PeopleCard extends Component {
     };
 
     render() {
-        const { 
-            data: { people, norm }, 
-            loading, modalVisible, 
-            propertyModalVisible, 
-            property, 
-            propertyModalTitle, 
-            disadvantage, 
-            propertyCountNorm, 
+        const {
+            data: { people, norm },
+            loading, modalVisible,
+            propertyModalVisible,
+            property,
+            propertyModalTitle,
+            disadvantage,
+            propertyCountNorm,
             isDocumentModal,
             propertyId
         } = this.state;
+        const { archived } = this.props;
         const { Content, Sider } = Layout;
         const { SubMenu } = Menu;
         const { TabPane } = Tabs;
@@ -148,12 +151,13 @@ class PeopleCard extends Component {
                             key="1"
                         >
                             <ProfileCard
+                                archived={archived}
                                 loading={loading}
                                 openModal={this.openModal}
                                 people={people}
                             />
                         </TabPane>
-                        <TabPane
+                        {!archived && <TabPane
                             tab={
                                 <span>
                                     <Icon type="solution" />
@@ -163,8 +167,8 @@ class PeopleCard extends Component {
                             key="2"
                         >
                             Здесь что-то будет(но это не точно)
-                        </TabPane>
-                        <TabPane
+                        </TabPane>}
+                        {!archived && <TabPane
                             tab={
                                 <span>
                                     <Icon type="form" />
@@ -173,15 +177,15 @@ class PeopleCard extends Component {
                             }
                             key="3"
                         >
-                            <Dismissal 
+                            <Dismissal
                                 idcard={people && people.idcard}
                                 archivedPeople={this.archivedPeople}
                             />
-                        </TabPane>
+                        </TabPane>}
                     </Tabs>
 
                     <Modal
-                        title={isDocumentModal ? "Выдать накладную": "Выдать имущество"}
+                        title={isDocumentModal ? "Выдать накладную" : "Выдать имущество"}
                         visible={modalVisible}
                         onCancel={this.closeModal}
                         footer={false}

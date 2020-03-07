@@ -41,7 +41,9 @@ class Squads extends Component {
         loading: true,
         modalVisible: false,
         mode: 'create',
-        editbleData: {}
+        editbleData: {},
+        page: 0,
+        size: 10
     }
 
     componentDidMount() {
@@ -49,9 +51,12 @@ class Squads extends Component {
     };
 
     getSquads = () => {
+        const { page, size } = this.state;
+        let pageParam = `?page=${page}`;
+        let sizeParam = `&size=${size}`;
         axios({
             method: 'get',
-            url: 'http://localhost:5000/api/squad',
+            url: `http://localhost:5000/api/squad${pageParam}${sizeParam}`,
             headers: { "Authorization": `Bearer ${getAccessToken()}` }
         })
             .then((response) => {
@@ -59,7 +64,11 @@ class Squads extends Component {
                     let { data } = response;
                     if (data) {
                         console.log(data.squads)
-                        this.setState({ data: data.squads, loading: false });
+                        this.setState({ 
+                            data: data.squads,
+                            totalElements: data.totalElements, 
+                            loading: false 
+                        });
                     } else {
                         console.log(response);
                     }
@@ -100,8 +109,16 @@ class Squads extends Component {
         this.setState({ modalVisible: false });
     };
 
+    handleTableChange = (pagination) => {
+        this.setState({
+            loading: true,
+            size: pagination.pageSize,
+            page: --pagination.current,
+        }, () => this.getSquads());
+    };
+
     render() {
-        const { columns, data, loading, modalVisible, adminColumns, mode, editbleData } = this.state;
+        const { columns, data, loading, modalVisible, adminColumns, mode, editbleData, totalElements } = this.state;
         const { role } = this.props;
         const { Content } = Layout;
         return (
@@ -113,6 +130,11 @@ class Squads extends Component {
                     dataSource={data}
                     loading={loading}
                     rowKey={(record) => record._id}
+                    onChange={this.handleTableChange}
+                    pagination={{
+                        showSizeChanger: true,
+                        total: totalElements
+                    }}
                 />
                 {getRole(role) === 'admin' && <Modal
                     visible={modalVisible}

@@ -63,47 +63,51 @@ class AdminForm extends Component {
         }
     };
 
-    handleSubmit = e => {
+    createUserCard = (values) => {
         const { mode, editbleData, squadId, stationId } = this.props;
         const { imageUrl, ranks } = this.state;
+        axios({
+            method: mode === 'create' ? 'post' : 'put',
+            url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`,
+            data: {
+                ...values,
+                upload: imageUrl,
+                station: stationId
+            },
+            headers: { "Authorization": `Bearer ${getAccessToken()}` }
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    const { data } = response;
+                    console.log(data)
+                    if (data) {
+                        this.props.getPeoples();
+                    }
+                } else {
+                    console.log(response);
+                }
+            })
+            .catch(error => {
+                if (error.response !== undefined) {
+                    errorModalCreate(error.response.data.message);
+                } else {
+                    errorModalCreate(error);
+                }
+            });
+        this.props.closeModal();
+    }
+
+    handleSubmit = e => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                axios({
-                    method: mode === 'create' ? 'post' : 'put',
-                    url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`,
-                    data: {
-                        ...values,
-                        upload: imageUrl,
-                        station: stationId
-                    },
-                    headers: { "Authorization": `Bearer ${getAccessToken()}` }
-                })
-                    .then(response => {
-                        if (response.status === 200) {
-                            const { data } = response;
-                            console.log(data)
-                            if (data) {
-                                this.props.getPeoples();
-                            }
-                        } else {
-                            console.log(response);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.response !== undefined) {
-                            errorModalCreate(error.response.data.message);
-                        } else {
-                            errorModalCreate(error);
-                        }
-                    });
-                this.props.closeModal();
+                this.createUserCard(values);
             }
         });
     };
 
     handleChange = info => {
-        this.setState({loading: true})
+        this.setState({ loading: true })
         this.getBase64(info.file);
     };
 
@@ -113,6 +117,12 @@ class AdminForm extends Component {
         const { mode, editbleData } = this.props;
         const { getFieldDecorator } = this.props.form;
         const { imageUrl, loading, ranks: { data, fetching } } = this.state;
+        let rankObj = {
+            rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+        }
+        if (mode === 'edit') {
+            rankObj.initialValue = editbleData.rank._id
+        }
         let options = [];
         if (data !== undefined) {
             options = data.map(item => <Select.Option key={item._id} value={item._id}>{item.name}</Select.Option>)
@@ -124,9 +134,10 @@ class AdminForm extends Component {
                 <div className="ant-upload-text">Загрузить</div>
             </div>
         );
+        console.log(editbleData)
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
-                <h1>Создание карточки сотрудника</h1>
+                <h1>{mode === 'edit' ? 'Редактирование карточки сотрудника' : 'Создание карточки сотрудника'}</h1>
                 <Form.Item>
                     {getFieldDecorator('secondName', {
                         rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
@@ -151,7 +162,7 @@ class AdminForm extends Component {
                 </Form.Item>
                 <Form.Item>
                     {getFieldDecorator('midleName', {
-                        initialValue: mode === 'edit' ? editbleData.middleName : ''
+                        initialValue: mode === 'edit' ? editbleData.midleName : ''
                     })(
                         <Input
                             prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -160,13 +171,19 @@ class AdminForm extends Component {
                     )}
                 </Form.Item>
                 <Form.Item>
-                    {getFieldDecorator('rank', {
-                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
-                        initialValue: mode === 'edit' ? editbleData.rank : ''
+                    {getFieldDecorator('idcard', {
+                        initialValue: mode === 'edit' ? editbleData.idcard : ''
                     })(
+                        <Input
+                            prefix={<Icon type="number" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            placeholder="Номер удостоверения"
+                        />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('rank', rankObj)(
                         <Select
-                            loading={fetching}
-                            placeholder="Выбирите звание"
+                            placeholder="Выберите звание"
                         >
                             {options}
                         </Select>
@@ -178,12 +195,12 @@ class AdminForm extends Component {
                         initialValue: mode === 'edit' ? editbleData.position : ''
                     })(
                         <Input
-                            prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            prefix={<Icon type="form" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             placeholder="Должность"
                         />,
                     )}
                 </Form.Item>
-                <Form.Item label="Upload">
+                <Form.Item label="Аватар">
                     {getFieldDecorator('upload', {})(
                         <div className="clearfix">
                             <Upload

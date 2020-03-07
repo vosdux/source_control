@@ -14,6 +14,7 @@ app.use('/api/property', require('./routes/property.router'));
 app.use('/api/statistic', require('./routes/statistic.router'));
 app.use('/api/document-creator', require('./routes/document.router'));
 app.use('/api/rank', require('./routes/rank.router'));
+app.use('/api/archive', require('./routes/archive.router'));
 
 const PORT = config.get('port');
 

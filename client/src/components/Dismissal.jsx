@@ -46,6 +46,7 @@ class Dismissal extends Component {
                 <Modal
                     visible={modalVisible}
                     footer={null}
+                    onCancel={this.closeModal}
                 >
                     <Text>Вы дейстительно хотите отправить карточку сотрудника в архив?</Text>
                     <Text>Для подтверждения введите номер удостоверения сотрудника</Text>

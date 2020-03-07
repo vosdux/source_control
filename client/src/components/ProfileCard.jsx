@@ -11,12 +11,13 @@ class ProfileCard extends Component {
     }
 
     render() {
-        const { people, loading } = this.props;
+        const { people, loading, archived } = this.props;
         const { Title, Text } = Typography;
         return (
 
             <Card>
                 <Skeleton loading={loading}>
+                    {archived && <Title className='error'>Уволен</Title>}
                     <Row type="flex">
                         <Title className="mr-10px mb-2px">{people && people.name}</Title>
                         <Title className="mt-0 mr-10px mb-2px">{people && people.secondName}</Title>
@@ -28,18 +29,20 @@ class ProfileCard extends Component {
                     <Row>
                         <Text className="rank">{people && people.rank.name}</Text>
                     </Row>
-                    {/* <Row>
-                        <Text className="rank">{people && people.idcard}</Text>
-                    </Row> */}
+                    <Row>
+                        <Text className="rank">№{people && people.idcard}</Text>
+                    </Row>
                     <Row>
                         <img src={people && people.upload ? people.upload : profilePlaceholder} className="avatar" alt="Аватар пользователя" />
                     </Row>
-                    <Row>
-                        <Button type="primary" icon="plus" onClick={() => this.props.openModal(true)}>Выдать накладную</Button>
-                    </Row>
-                    <Row className='mt-2'>
-                        <Button type="default" icon="plus" onClick={() => this.props.openModal(false)}>Добавить имущество</Button>
-                    </Row>
+                    {!archived && <>
+                        <Row>
+                            <Button type="primary" icon="plus" onClick={() => this.props.openModal(true)}>Выдать накладную</Button>
+                        </Row>
+                        <Row className='mt-2'>
+                            <Button type="default" icon="plus" onClick={() => this.props.openModal(false)}>Добавить имущество</Button>
+                        </Row>
+                    </>}
                 </Skeleton>
             </Card>
         );
