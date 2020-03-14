@@ -1,49 +1,39 @@
 import React, { Component } from 'react';
-import { Form, Icon, Input, Button, Select } from 'antd';
+import { Form, Icon, Input, Button } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken } from '../../helpers/Utils';
+import { getAccessToken, refreshToken } from '../../helpers/Utils';
 import axios from 'axios';
 
 class AdminForm extends Component {
-    constructor(props) {
-        super(props);
-    }
+
+    saveData = async (values) => {
+        try {
+            const { mode, editbleData, squadId, getItems } = this.props;
+            await refreshToken();
+            const response = await axios({
+                method: mode === 'create' ? 'post' : 'put',
+                url: `http://localhost:5000/api/squad/${squadId}/${mode === 'create' ? '' : editbleData._id}`,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` },
+                data: {
+                    ...values,
+                    squad: squadId
+                }
+            });
+            if (response.status === 200) {
+                getItems();
+            }
+        } catch (error) {
+            errorModalCreate(error);
+        }
+    };
 
     handleSubmit = e => {
-        const { mode, editbleData, squadId } = this.props;
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                axios({
-                    method: mode === 'create' ? 'post' : 'put',
-                    url: `http://localhost:5000/api/squad/${squadId}/${mode === 'create' ? '' : editbleData._id}`,
-                    headers: { "Authorization": `Bearer ${getAccessToken()}` },
-                    data: {
-                        ...values,
-                        squad: squadId
-                    }
-                })
-                    .then(response => {
-                        if (response.status === 200) {
-                            const { data } = response;
-                            console.log(data)
-                            if (data) {
-                                this.props.setData(data.stations);
-                            }
-                        } else {
-                            console.log(response);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.response !== undefined) {
-                            errorModalCreate(error.response.data.message);
-                        } else {
-                            errorModalCreate(error);
-                        }
-                    });
-                this.props.closeModal();
+                this.saveData(values);
+                this.props.closeModal(values);
             }
-
         });
     };
 
@@ -82,8 +72,8 @@ class AdminForm extends Component {
                 </Form.Item>
             </Form>
         );
-    }
-}
+    };
+};
 
 const StationForm = Form.create({ name: 'squad_form' })(AdminForm);
 

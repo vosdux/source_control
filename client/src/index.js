@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
-import { Router } from 'react-router'
 import { createBrowserHistory } from 'history';
 import App from './App';
 import reducer from './store/reducer';

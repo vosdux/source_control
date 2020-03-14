@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Layout, Modal, Icon, Menu, Tabs, Spin } from 'antd';
+import { Layout, Modal, Icon, Menu, Tabs, } from 'antd';
 import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
-import Statistic from '../components/Statistic';
 import Dismissal from '../components/Dismissal';
 import ProfileCard from '../components/ProfileCard';
-import { getAccessToken, isLifeTimeEnd } from '../helpers/Utils';
+import { getAccessToken, refreshToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 
 class PeopleCard extends Component {
@@ -25,50 +24,45 @@ class PeopleCard extends Component {
         this.getPeopleData();
     };
 
-    getPeopleData = () => {
-        this.setState({ loading: true });
-        let url = `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`
-        if (this.props.archived) {
-            url = `http://localhost:5000/api/archive/${this.props.location.pathname.split('/')[2]}`
-        }
-        axios({
-            method: 'get',
-            url,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        console.log(data)
-                        this.setState({ data: data, loading: false });
-
-                    } else {
-                        console.log(response)
-                    }
-                }
+    getPeopleData = async () => {
+        try {
+            const { archived, location } = this.props;
+            let url = `http://localhost:5000/api/squad/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`;
+            if (archived) {
+                url = `http://localhost:5000/api/archive/${location.pathname.split('/')[2]}`;
+            }
+            await refreshToken();
+            const response = await axios({
+                method: 'get',
+                url,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
             })
-            .catch((error) => errorModalCreate(error.message));
+            if (response.status === 200) {
+                const { data } = response;
+                if (data) {
+                    this.setState({ data: data, loading: false });
+                }
+            }
+        } catch (error) {
+            errorModalCreate(error.message)
+        }
     };
 
-    archivedPeople = () => {
-        this.setState({ loading: true });
-        axios({
-            method: 'delete',
-            url: `http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        this.props.history.push(`http://localhost:5000/api/squad/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/`)
-                    } else {
-                        console.log(response)
-                    }
-                }
-            })
-            .catch((error) => errorModalCreate(error.message));
+    archivePeople = async () => {
+        try {
+            const { location: { pathname } } = this.props;
+            await refreshToken();
+            const response = await axios({
+                method: 'delete',
+                url: `http://localhost:5000/api/squad/${pathname.split('/')[1]}/${pathname.split('/')[2]}/${pathname.split('/')[3]}`,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
+            });
+            if (response.status === 200) {
+                this.props.history.push(`http://localhost:5000/api/squad/${pathname.split('/')[1]}/${pathname.split('/')[2]}/`);
+            }
+        } catch (error) {
+            errorModalCreate(error.message);
+        }
     }
 
     openModal = (isDocumentModal) => {
@@ -99,6 +93,14 @@ class PeopleCard extends Component {
         this.setState({ propertyModalVisible: false });
     };
 
+    onGetPeopleData = () => {
+        this.setState({ loading: true }, () => this.getPeopleData());
+    };
+
+    onArchivePeople = () => {
+        this.setState({ loading: false }, () => this.archivePeople())
+    }
+
     render() {
         const {
             data: { people, norm },
@@ -106,7 +108,6 @@ class PeopleCard extends Component {
             propertyModalVisible,
             property,
             propertyModalTitle,
-            disadvantage,
             propertyCountNorm,
             isDocumentModal,
             propertyId
@@ -179,7 +180,7 @@ class PeopleCard extends Component {
                         >
                             <Dismissal
                                 idcard={people && people.idcard}
-                                archivedPeople={this.archivedPeople}
+                                archivePeople={this.onArchivePeople}
                             />
                         </TabPane>}
                     </Tabs>
@@ -195,7 +196,7 @@ class PeopleCard extends Component {
                             properties={norm && norm.properties}
                             peopleId={this.props.location.pathname.split('/')[3]}
                             closeModal={this.closeModal}
-                            getPeopleData={this.getPeopleData}
+                            getPeopleData={this.onGetPeopleData}
                             isDocumentModal={isDocumentModal}
                         />
                     </Modal>

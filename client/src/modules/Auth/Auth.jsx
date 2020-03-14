@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Icon, Input, Button, Checkbox, Row, Col, Card } from 'antd';
+import { Form, Icon, Input, Button, Row, Col, Card } from 'antd';
 import { connect } from 'react-redux';
 import { errorModalCreate } from '../../helpers/Modals';
 import * as actions from '../../store/actions';
@@ -10,11 +10,12 @@ class NormalLoginForm extends Component {
         loading: false
     };
 
-    loginHandler = (accessToken, refreshToken, role) => {
+    loginHandler = (accessToken, refreshToken, role, expiredIn) => {
         localStorage.setItem('userData', JSON.stringify({
             accessToken,
             refreshToken,
-            role
+            role,
+            expiredIn
         }));
         this.props.userLoginAction(true, role);
     }
@@ -34,7 +35,7 @@ class NormalLoginForm extends Component {
                             const { data } = response;
                             console.log(data)
                             if (data) {
-                                this.loginHandler(data.accessToken, data.refreshToken, data.role)
+                                this.loginHandler(data.accessToken, data.refreshToken, data.role, data.expiredIn)
                             }
                         } else {
                             console.log(response);

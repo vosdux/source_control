@@ -1,40 +1,34 @@
 import React, { Component } from 'react';
 import { Form, Icon, Input, Button } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken } from '../../helpers/Utils';
+import { getAccessToken, refreshToken } from '../../helpers/Utils';
 import axios from 'axios';
 
 class AdminForm extends Component {
 
+    saveData = async (values) => {
+        try {
+            const { mode, editbleData, getItems } = this.props;
+            await refreshToken();
+            const response = await axios({
+                method: mode === 'create' ? 'post' : 'put',
+                url: `http://localhost:5000/api/squad/${mode === 'create' ? '' : editbleData._id}`,
+                data: values,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
+            })
+            if (response.status === 200) {
+                getItems();
+            }
+        } catch (error) {
+            errorModalCreate(error.response.data.message);
+        }
+    }
+
     handleSubmit = e => {
-        const { mode, editbleData } = this.props;
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                axios({
-                    method: mode === 'create' ? 'post' : 'put',
-                    url: `http://localhost:5000/api/squad/${mode === 'create' ? '' : editbleData._id}`,
-                    data: values,
-                    headers: { "Authorization": `Bearer ${getAccessToken()}` }
-                })
-                    .then(response => {
-                        if (response.status === 200) {
-                            const { data } = response;
-                            console.log(data)
-                            if (data) {
-                                this.props.setData(data.squads);
-                            }
-                        } else {
-                            console.log(response);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.response !== undefined) {
-                            errorModalCreate(error.response.data.message);
-                        } else {
-                            errorModalCreate(error);
-                        }
-                    });
+                this.saveData(values)
                 this.props.closeModal();
             }
         });

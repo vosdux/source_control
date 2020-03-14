@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Form, Icon, Input, Button, Upload, message, Select } from 'antd';
+import { Form, Icon, Input, Button, Upload, Select } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken } from '../../helpers/Utils';
+import { getAccessToken, refreshToken } from '../../helpers/Utils';
 import axios from 'axios';
 
 class AdminForm extends Component {
@@ -15,42 +15,41 @@ class AdminForm extends Component {
 
     componentDidMount() {
         this.getRanks();
-    }
+    };
 
-    getRanks = () => {
-        axios({
-            method: 'get',
-            url: `http://localhost:5000/api/rank/`,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        console.log(data)
-                        this.setState({
-                            ranks: {
-                                data: data.ranks,
-                                fetching: false
-                            }
-                        });
-                    } else {
-                        console.log(response)
-                    }
+    getRanks = async () => {
+        try {
+            await refreshToken();
+            const response = await axios({
+                method: 'get',
+                url: `http://localhost:5000/api/rank/`,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
+            });
+            if (response.status === 200) {
+                const { data } = response;
+                if (data) {
+                    this.setState({
+                        ranks: {
+                            data: data.ranks,
+                            fetching: false
+                        }
+                    });
                 }
-            })
-            .catch((error) => errorModalCreate(error.message));
-    }
+            }
+        } catch (error) {
+            errorModalCreate(error.message)
+        }
+    };
 
     getBase64(img) {
         const isJpgOrPng = img.type === 'image/jpeg' || img.type === 'image/png';
         if (!isJpgOrPng) {
-            console.error('You can only upload JPG/PNG file!');
+            errorModalCreate('Вы можете загружать только файлы форматов JPG/PNG!');
             return false;
         }
         const isLt2M = img.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            console.error('Image must smaller than 2MB!');
+            errorModalCreate('Файл должен быть меньше 2МБ!');
             return false;
         }
         const reader = new FileReader();
@@ -63,55 +62,43 @@ class AdminForm extends Component {
         }
     };
 
-    createUserCard = (values) => {
-        const { mode, editbleData, squadId, stationId } = this.props;
-        const { imageUrl, ranks } = this.state;
-        axios({
-            method: mode === 'create' ? 'post' : 'put',
-            url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`,
-            data: {
-                ...values,
-                upload: imageUrl,
-                station: stationId
-            },
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    console.log(data)
-                    if (data) {
-                        this.props.getPeoples();
-                    }
-                } else {
-                    console.log(response);
-                }
-            })
-            .catch(error => {
-                if (error.response !== undefined) {
-                    errorModalCreate(error.response.data.message);
-                } else {
-                    errorModalCreate(error);
-                }
+    createUserCard = async (values) => {
+        try {
+            const { mode, editbleData, squadId, stationId, getItems } = this.props;
+            const { imageUrl } = this.state;
+            await refreshToken();
+            const response = await axios({
+                method: mode === 'create' ? 'post' : 'put',
+                url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`,
+                data: {
+                    ...values,
+                    upload: imageUrl,
+                    station: stationId
+                },
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
             });
-        this.props.closeModal();
+            if (response.status === 200) {
+                getItems();
+            }
+        } catch (error) {
+            errorModalCreate(error.response.data.message);
+        }
     }
 
-    handleSubmit = e => {
+    handleSubmit = (e) => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.createUserCard(values);
+                this.props.closeModal();
             }
         });
     };
 
-    handleChange = info => {
+    handleChange = (info) => {
         this.setState({ loading: true })
         this.getBase64(info.file);
     };
-
-
 
     render() {
         const { mode, editbleData } = this.props;
@@ -134,7 +121,6 @@ class AdminForm extends Component {
                 <div className="ant-upload-text">Загрузить</div>
             </div>
         );
-        console.log(editbleData)
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
                 <h1>{mode === 'edit' ? 'Редактирование карточки сотрудника' : 'Создание карточки сотрудника'}</h1>
@@ -162,6 +148,7 @@ class AdminForm extends Component {
                 </Form.Item>
                 <Form.Item>
                     {getFieldDecorator('midleName', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
                         initialValue: mode === 'edit' ? editbleData.midleName : ''
                     })(
                         <Input
@@ -172,6 +159,7 @@ class AdminForm extends Component {
                 </Form.Item>
                 <Form.Item>
                     {getFieldDecorator('idcard', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
                         initialValue: mode === 'edit' ? editbleData.idcard : ''
                     })(
                         <Input
@@ -184,6 +172,7 @@ class AdminForm extends Component {
                     {getFieldDecorator('rank', rankObj)(
                         <Select
                             placeholder="Выберите звание"
+                            loading={fetching}
                         >
                             {options}
                         </Select>

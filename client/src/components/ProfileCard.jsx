@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Card, Row, Typography, Col, Skeleton } from 'antd';
+import { Button, Card, Row, Typography, Skeleton } from 'antd';
 import profilePlaceholder from '../profile-placeholder.png';
 
 class ProfileCard extends Component {

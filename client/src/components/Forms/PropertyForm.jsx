@@ -1,10 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { Form, Button, Checkbox, DatePicker, Divider, InputNumber } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken } from '../../helpers/Utils';
+import { getAccessToken, refreshToken } from '../../helpers/Utils';
 import axios from 'axios';
 import moment from 'moment';
-import * as fs from 'fs';
 
 class PForm extends Component {
     state = {
@@ -32,64 +31,51 @@ class PForm extends Component {
         }
     };
 
-    giveProperty = (result) => {
-        const { peopleId, isDocumentModal } = this.props;
-        let url = `http://localhost:5000/api/property/${peopleId}/add-property`;
-        let method = 'put';
-        if (isDocumentModal) {
-            url = `http://localhost:5000/api/document-creator`;
-            method = 'get';
-        }
-        axios({
-            method,
-            url,
-            data: {
-                result,
-            },
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    !isDocumentModal && this.props.getPeopleData();
-                } else {
-                    console.log(response);
-                }
-            })
-            .catch(error => {
-                if (error.response !== undefined) {
-                    errorModalCreate(error.response.data.message);
-                } else {
-                    errorModalCreate(error);
-                }
+    giveProperty = async (result) => {
+        try {
+            const { peopleId, isDocumentModal, getPeopleData } = this.props;
+            let url = `http://localhost:5000/api/property/${peopleId}/add-property`;
+            let method = 'put';
+            if (isDocumentModal) {
+                url = `http://localhost:5000/api/document-creator`;
+                method = 'get';
+            }
+            await refreshToken();
+            const response = await axios({
+                method,
+                url,
+                data: {
+                    result,
+                },
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
             });
+            if (response.status === 200) {
+                !isDocumentModal && getPeopleData();
+            }
+        } catch (error) {
+            errorModalCreate(error.response.data.message);
+        }
     };
 
-    handleSubmit = e => {
-        const { isDocumentModal, properties } = this.props;
+    handleSubmit = (e) => {
+        const { properties } = this.props;
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 let result = [];
-                console.log(values)
                 for (let value in values) {
                     if (values[value] && !values[value]._isAMomentObject && typeof values[value] !== 'number') {
                         let property = {};
-                        console.log(properties)
-                        console.log(value)
                         let res = properties.find(item => item.property.fieldName === value);
-                        console.log(res)
-                        property.property = res && res.property._id
+                        property.property = res && res.property._id;
                         if (values[value + '_date']) {
-                            property.date = moment(values[value + '_date']).format('YYYY-MM-DD')
-                            console.log(property.date)
+                            property.date = moment(values[value + '_date']).format('YYYY-MM-DD');
                         };
                         for (let i = 0; i < values[value + '_count']; i++) {
                             result.push(property);
                         }
                     }
                 }
-                console.log(result);
-
                 this.giveProperty(result);
                 this.props.closeModal();
             }
@@ -109,9 +95,8 @@ class PForm extends Component {
     };
 
     render() {
-        const { properties, form: { getFieldDecorator }, isDocumentModal } = this.props;
+        const { properties, form: { getFieldDecorator } } = this.props;
         const { checked } = this.state;
-        console.log(properties)
         return (
             <Form onSubmit={this.handleSubmit} className="property-form">
                 {properties.map(item => <Fragment key={item.property.fieldName}>
@@ -155,8 +140,8 @@ class PForm extends Component {
                 </Form.Item>
             </Form>
         );
-    }
-}
+    };
+};
 
 const PropertyForm = Form.create({ name: 'squad_form' })(PForm);
 

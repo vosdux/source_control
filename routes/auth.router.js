@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Token = require('../models/Token');
 const Role = require('../models/Role');
 const { check, validationResult } = require('express-validator');
+const config = require('config');
 const router = Router();
 const authHelper = require('../helpers/authHelpers');
 
@@ -52,7 +53,9 @@ router.post(
             }
 
             const tokens = await updateToken(user._id, user.role);
-            res.json({accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, role: user.role});
+            let now = new Date();
+            let expiredIn = Date.parse(now) + 900000;
+            res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, role: user.role, expiredIn });
 
         } catch (error) {
             console.log(error)
@@ -60,29 +63,32 @@ router.post(
         }
     });
 
-router.post('/refresh-token', async (res, req) => {
+router.post('/refresh-token', async (req, res) => {
     try {
         const { refreshToken } = req.body;
-        const payload = jwt.verify(refreshToken, secret);
+        const payload = jwt.verify(refreshToken, config.get('jwtSecret'));
         if (payload.type !== 'refresh') {
             res.status(400).json({ message: 'Неверный токен!' });
         }
 
         const tokenData = await Token.findOne({ tokenId: payload.id });
 
-        if (tokenData = null) {
+        if (tokenData === null) {
             res.status(400).json({ message: 'Неверный токен!' });
         }
 
         const tokens = await updateToken(tokenData.userId);
+        let now = new Date();
+        let expiredIn = Date.parse(now) + 900000;
 
-        res.json(tokens);
+        res.json({ ...tokens, expiredIn });
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             res.status(400).json({ message: 'Токен протух' });
         } else if (error instanceof jwt.JsonWebTokenError) {
             res.status(400).json({ message: 'Неверный токен' });
         }
+        console.log(error)
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 })

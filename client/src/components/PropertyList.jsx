@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { Table, Icon, Typography, Button } from 'antd';
 import axios from 'axios';
-import { isLifeTimeEnd } from '../helpers/Utils';
+import { isLifeTimeEnd, refreshToken } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 import { getAccessToken } from '../helpers/Utils';
-import moment from 'moment'
 
 class PropertyList extends Component {
     state = {
@@ -23,7 +22,7 @@ class PropertyList extends Component {
                 render: (text, record) => text === true ? <Icon type="check" style={{ color: '#00B75B', fontSize: '25px' }} /> : <Icon type="close" style={{ color: '#800000', fontSize: '25px' }} />
             },
             {
-                render: (text, record) => record.discarded ? 'Списано' : <Button onClick={() => this.discardProperty(record)}>Списать</Button>
+                render: (text, record) => record.discarded ? 'Списано' : <Button onClick={() => this.setState({ loading: true }, () => this.discardProperty(record))}>Списать</Button>
             }
         ],
         property: this.props.property,
@@ -34,36 +33,28 @@ class PropertyList extends Component {
         this.getStatus()
     };
 
-    discardProperty = (record) => {
-        this.setState({loading: true});
-        const { peopleId, propertyId } = this.props;
-        let url = `http://localhost:5000/api/property/${peopleId}/discard/${record._id}`;
-
-        axios({
-            method: 'put',
-            url,
-            data: {},
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    let property = data.people.propertyes.filter(elem => elem.property._id === propertyId)
-                    this.setState({
-                        loading: false,
-                        property: property
-                    }, () => this.getStatus());
-                } else {
-                    console.log(response);
-                }
-            })
-            .catch(error => {
-                if (error.response !== undefined) {
-                    errorModalCreate(error.response.data.message);
-                } else {
-                    errorModalCreate(error);
-                }
+    discardProperty = async (record) => {
+        try {
+            const { peopleId, propertyId } = this.props;
+            let url = `http://localhost:5000/api/property/${peopleId}/discard/${record._id}`;
+            await refreshToken();
+            const response = await axios({
+                method: 'put',
+                url,
+                data: {},
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
             });
+            if (response.status === 200) {
+                const { data } = response;
+                let property = data.people.propertyes.filter(elem => elem.property._id === propertyId)
+                this.setState({
+                    loading: false,
+                    property: property
+                }, () => this.getStatus());
+            }
+        } catch (error) {
+            errorModalCreate(error.response.data.message);
+        }
     }
 
     getStatus = () => {

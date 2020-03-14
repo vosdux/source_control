@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import { Layout, Menu, Breadcrumb, Icon, Button } from 'antd';
+import { Layout, Menu } from 'antd';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as actions from '../store/actions';
 
-const { SubMenu } = Menu;
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content } = Layout;
 
 class MainLayout extends Component {
     handleExitClick = () => {
@@ -28,9 +27,14 @@ class MainLayout extends Component {
                         </Menu.Item>
                         <Menu.Item key="2">
                             <Link to={'/archive'}>Архив</Link>
-                        </Menu.Item><Menu.Item key="3">
+                        </Menu.Item>
+                        <Menu.Item key="3">
                             <Link to={'/archive'}>Нормы</Link>
                         </Menu.Item>
+                        <Menu.Item key="4" onClick={this.handleExitClick}>
+                            Выйти
+                        </Menu.Item>
+                        
 
                     </Menu>
                 </Header>

@@ -1,24 +1,18 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { getAccessToken, getRole } from '../helpers/Utils';
-import { errorModalCreate } from '../helpers/Modals';
-import { Table, Modal, Button, Icon, Tabs, Input } from 'antd';
 import { connect } from 'react-redux';
-import PeopleForm from '../components/AdminForms/PeopleForm';
-import StatisticModule from '../components/Statistic';
-import { Layout } from 'antd';
+import PeopleForm from '../components/Forms/PeopleForm';
+import List from '../components/List';
 
 class Peoples extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: [],
             columns: [
                 {
                     title: 'Имя',
                     dataIndex: 'fullName',
-                    render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
+                    render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
                 },
                 {
                     title: 'Звание',
@@ -29,176 +23,53 @@ class Peoples extends Component {
                     dataIndex: 'position',
                 },
             ],
-            loading: true,
-            adminColumns: [
-                {
-                    title: 'Имя',
-                    dataIndex: 'fullName',
-                    render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
-                },
-                {
-                    title: 'Звание',
-                    dataIndex: 'rank.name',
-                },
-                {
-                    title: 'Должность',
-                    dataIndex: 'position',
-                },
-                {
-                    title: '',
-                    key: 'edit',
-                    render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
-                }
-            ],
-            page: 0,
-            size: 10,
-            search: ''
-        }
-    }
-
-    componentDidMount() {
-        this.setState({
-            squadId: this.props.location.pathname.split('/')[1],
-            stationId: this.props.location.pathname.split('/')[2]
-        }, () => this.getPeoples());
-    };
-
-    getPeoples = () => {
-        const { page, size, squadId, stationId, search } = this.state;
-        let pageParam = `?page=${page}`;
-        let sizeParam = `&size=${size}`;
-        let searchParam = `&search=${search}`;
-        this.setState({ loading: true });
-        axios({
-            method: 'get',
-            url: `http://localhost:5000/api/squad/${squadId}/${stationId}${pageParam}${sizeParam}${searchParam}`,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        console.log(data)
-                        this.setState({
-                            data: data.peoples,
-                            loading: false,
-                            totalElements: data.totalElements
-                        }, () => this.formatPeople());
-                    } else {
-                        console.log(response)
-                    }
-                }
-            })
-            .catch((error) => errorModalCreate(error.message));
-    };
-
-    formatPeople = () => {
-        const { data } = this.state;
-        let newData = data.map(item => {
-            return {
-                ...item,
-                fullName: `${item.secondName} ${item.secondName} ${item.midleName !== undefined ? item.midleName : ''}`,
+            permissons: {
+                add: true,
+                edit: true,
+                delete: false
             }
-        });
-        this.setState({ formatedData: newData })
+        };
     };
 
-    openModal = (mode) => {
-        this.setState({ mode, modalVisible: true });
+    formatPeople = (data) => {
+        let newData = data.map(item => ({
+            ...item,
+            fullName: `${item.secondName} ${item.name} ${item.midleName !== undefined ? item.midleName : ''}`,
+        }));
+        return newData;
     };
 
-    closeModal = () => {
-        this.setState({ modalVisible: false });
-    };
-
-    handleTableChange = (pagination) => {
-        this.setState({
-            loading: true,
-            size: pagination.pageSize,
-            page: --pagination.current,
-        }, () => this.getPeoples());
-    };
-
-    handleSearchChange = (value) => {
-        this.setState({ search: value }, () => this.getPeoples());
-    }
+    AddForm = (props) => (
+        <PeopleForm
+            {...props}
+        />
+    );
 
     render() {
-        const { columns, loading, adminColumns, editbleData, modalVisible, mode, formatedData, stationId, totalElements } = this.state;
-        const { role } = this.props;
-        const { Content } = Layout;
-        const { TabPane } = Tabs;
+        const { columns, permissons } = this.state;
+        const squadId = this.props.location.pathname.split('/')[1];
+        const stationId = this.props.location.pathname.split('/')[2];
         return (
-            <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                <Tabs defaultActiveKey="1">
-                    <TabPane
-                        tab={
-                            <span>
-                                <Icon type="profile" />
-                                Список
-                            </span>
-                        }
-                        key="1"
-                    >
-                        <h1>Сотрудники</h1>
-                        <Input.Search
-                            className='mt-2'
-                            enterButton='Искать'
-                            placeholder='Введите фамилию'
-                            size='large'
-                            onSearch={value => this.handleSearchChange(value)}
-                        />
-                        <Button type='primary' icon="plus" className='mt-2' onClick={() => this.openModal('create')}>Добавить</Button>
-                        <Table
-                            dataSource={formatedData}
-                            columns={getRole(role) === 'admin' ? adminColumns : columns}
-                            loading={loading}
-                            rowKey={(record) => record._id}
-                            onChange={this.handleTableChange}
-                            pagination={{
-                                showSizeChanger: true,
-                                total: totalElements
-                            }}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={
-                            <span>
-                                <Icon type="solution" />
-                                Статистика
-                                </span>
-                        }
-                        key="2"
-                    >
-                        <StatisticModule
-                            stationId={stationId}
-                        />
-                    </TabPane>
-                </Tabs>
-                <Modal
-                    visible={modalVisible}
-                    onCancel={this.closeModal}
-                    footer={false}
-                    destroyOnClose={true}
-                >
-                    <PeopleForm
-                        setData={this.setData}
-                        closeModal={this.closeModal}
-                        mode={mode}
-                        editbleData={editbleData}
-                        squadId={this.props.location.pathname.split('/')[1]}
-                        stationId={this.props.location.pathname.split('/')[2]}
-                        getPeoples={this.getPeoples}
-                    />
-                </Modal>
-            </Content>
+            <List
+                title='Сотрудники'
+                dataUrl={`http://localhost:5000/api/squad/${squadId}/${stationId}/`}
+                AddForm={this.AddForm}
+                columns={columns}
+                permissons={permissons}
+                squadId={squadId}
+                stationId={stationId}
+                enableSearch={true}
+                statistic={true}
+                formatDataRules={this.formatPeople}
+            />
         );
     };
 };
 
+
 const mapStateToProps = (state) => {
     const { role } = state;
     return { role };
-}
+};
 
 export default connect(mapStateToProps)(Peoples);

@@ -1,9 +1,6 @@
 import React, { Component } from 'react'
 import { Modal, Button, Typography, Row, Input, message } from 'antd';
 
-const { confirm } = Modal;
-const { Text } = Typography;
-
 class Dismissal extends Component {
     state = {
         inputValue: '',
@@ -27,7 +24,7 @@ class Dismissal extends Component {
         const { inputValue } = this.state;
         console.log(idcard)
         if (inputValue === idcard) {
-            this.props.archivedPeople();
+            this.props.archivePeople();
         } else {
             message.error('Неверный номер удостоверения');
         }
@@ -35,6 +32,7 @@ class Dismissal extends Component {
 
     render() {
         const { modalVisible, inputValue } = this.state;
+        const { Text } = Typography;
         return (
             <div>
                 <Row>

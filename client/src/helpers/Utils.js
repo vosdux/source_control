@@ -1,5 +1,6 @@
 
 import moment from 'moment';
+import axios from 'axios';
 
 export function convertTimeValue(time) {
     return time < 10 ? '0' + time.slice(-2) : time
@@ -30,4 +31,34 @@ export const isLifeTimeEnd = (item) => {
     let lifeTime = moment(lifeTimeEnd).isAfter(now);
 
     return lifeTime;
+}
+
+export const refreshToken = async () => {
+    let data = localStorage.getItem('userData');
+    let parseData = null;
+    if (data) {
+        parseData = JSON.parse(data);
+    }
+    let now = new Date();
+    let expiredIn = Date.parse(now);
+    if (expiredIn > parseData.expiredIn) {
+        let response = await axios({
+            method: 'post',
+            url: 'http://localhost:5000/api/auth/refresh-token',
+            data: {
+                refreshToken: parseData.refreshToken
+            }
+        });
+        if (response.status === 200) {
+            if (response.data) {
+                const { data } = response;
+                localStorage.setItem('userData', JSON.stringify({
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
+                    role: parseData.role,
+                    expiredIn: data.expiredIn
+                }));
+            }
+        }
+    }
 }

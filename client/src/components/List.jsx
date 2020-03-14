@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { getAccessToken } from '../helpers/Utils';
-import { Table, Button, Modal, Icon } from 'antd';
-import { Link } from 'react-router-dom';
-import { errorModalCreate } from '../helpers/Modals'
-import { getRole } from '../helpers/Utils';
-import { connect } from 'react-redux';
-import SquadForm from '../components/AdminForms/SquadForm';
+import { getAccessToken, refreshToken } from '../helpers/Utils';
+import { Table, Button, Modal, Icon, Layout, Tabs, Input } from 'antd';
+import StatisticModule from './Statistic';
+import { errorModalCreate } from '../helpers/Modals';
 
 class List extends Component {
     state = {
@@ -14,101 +11,183 @@ class List extends Component {
         loading: true,
         modalVisible: false,
         mode: 'create',
-        editbleData: {}
+        editbleData: {},
+        search: '',
+        page: 0,
+        size: 10
     }
 
     componentDidMount() {
         this.getData();
+        this.getColumns();
     };
 
-    getData = (url) => {
-        const { dataUrl, entity } = this.props;
-        axios({
-            method: 'get',
-            url: dataUrl,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    let { data } = response;
-                    if (data) {
-                        console.log(data.squads)
-                        this.setState({ data: data[entity], loading: false });
-                    } else {
-                        console.log(response);
-                    }
-                }
-            })
-            .catch((error) => errorModalCreate(error.message));
-    };
+    componentDidUpdate(prevProps) {
+        if (prevProps.permissons !== this.props.permissons) {
+            this.getColumns();
+        }
+    }
 
-    deleteItem = (id) => {
-        const { dataUrl, entity } = this.props;
-        axios({
-            method: 'delete',
-            url: dataUrl + id,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` },
-        })
-            .then((response) => {
-                if (response.status === 200) {
+    getData = async () => {
+        try {
+            const { dataUrl, enableSearch, formatDataRules } = this.props;
+            const { page, size, search } = this.state
+            const pageParam = `?page=${page}`;
+            const sizeParam = `&size=${size}`;
+            const searchParam = `&search=${search}`;
+            await refreshToken();
+            const response = await axios({
+                method: 'get',
+                url: dataUrl + pageParam + sizeParam + (enableSearch ? searchParam : ''),
+                headers: { "Authorization": `Bearer ${getAccessToken()}` }
+            });
+            if (response.status === 200) {
+                if (response.data) {
                     const { data } = response;
-                    if (data) {
-                        console.log(data.squads)
-                        this.setState({ data: data[entity], loading: false });
-                    } else {
-                        console.log(response);
-                    }
+                    this.setState({ data: data.content, loading: false }, () => {
+                        if (formatDataRules) {
+                            this.formatData();
+                        }
+                    });
                 }
-            })
-            .catch((error) => errorModalCreate(error.message));
+            }
+        } catch (error) {
+            this.setState({ loading: false }, () => errorModalCreate(error.message))
+        }
+
     };
 
-    setData = (data) => {
-        this.setState({data})
+    deleteItem = async (id) => {
+        try {
+            const { dataUrl } = this.props;
+            await refreshToken();
+            const response = await axios({
+                method: 'delete',
+                url: dataUrl + id,
+                headers: { "Authorization": `Bearer ${getAccessToken()}` },
+            });
+            if (response.status === 200) {
+                this.getData();
+            }
+        } catch (error) {
+            errorModalCreate(error.message)
+        }
     };
+
+    formatData = () => {
+        const { formatDataRules } = this.props;
+        const { data } = this.state;
+        let newData = formatDataRules(data);
+        this.setState({ data: newData });
+    }
 
     openModal = (mode) => {
-        this.setState({mode, modalVisible: true});
+        this.setState({ mode, modalVisible: true });
     };
 
     closeModal = () => {
-        this.setState({modalVisible: false});
+        this.setState({ modalVisible: false });
     };
 
-    render() {
-        const { data, loading, modalVisible, mode, editbleData } = this.state;
-        const { role, adminColumns, columns, title } = this.props;
+    handleSearchChange = (value) => {
+        this.setState({ search: value }, () => this.getData());
+    }
+
+    getColumns = () => {
+        const { permissons, columns } = this.props;
+        let newColumns = columns;
+        if (permissons.edit) {
+            newColumns.push({
+                title: '',
+                key: 'edit',
+                render: (text, record) => <Icon type="edit" onClick={() => { this.openModal('edit'); this.setState({ editbleData: record }) }} />
+            })
+        }
+        if (permissons.delete) {
+            newColumns.push({
+                title: '',
+                key: 'delete',
+                render: (text, record) => <Icon type="delete" onClick={() => this.deleteItem(record._id)} />
+            })
+        }
+
+        this.setState({ columns: newColumns });
+    };
+
+    renderList = () => {
+        const { data, loading, modalVisible, mode, editbleData, columns } = this.state;
+        const { title, AddForm, squadId, permissons, enableSearch, stationId } = this.props;
         return (
             <>
                 <h1>{title}</h1>
-                {getRole(role) === 'admin' && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
+                {enableSearch && <Input.Search
+                    className='mt-1 mb-1'
+                    enterButton='Искать'
+                    placeholder='Введите фамилию'
+                    size='large'
+                    onSearch={value => this.handleSearchChange(value)}
+                />}
+                {permissons.add && <Button type='primary' icon="plus" onClick={() => this.openModal('create')}>Добавить</Button>}
                 <Table
-                    columns={getRole(role) === 'admin' ? adminColumns : columns}
+                    columns={columns}
                     dataSource={data}
                     loading={loading}
                     rowKey={(record) => record._id}
                 />
-                {getRole(role) === 'admin' && <Modal
+                {permissons.add && <Modal
                     visible={modalVisible}
                     onCancel={this.closeModal}
                     footer={false}
+                    destroyOnClose={true}
                 >
-                    <SquadForm
-                        setData={this.setData}
+                    <AddForm
+                        getItems={this.getData}
                         closeModal={this.closeModal}
                         mode={mode}
                         editbleData={editbleData}
+                        squadId={squadId}
+                        stationId={stationId}
                     />
                 </Modal>}
             </>
+        )
+    }
+
+    render() {
+        const { squadId, statistic } = this.props;
+        const { Content } = Layout;
+        const { TabPane } = Tabs;
+        return (
+            <Content style={{ padding: '0 24px', minHeight: 280 }}>
+                {statistic ? <Tabs defaultActiveKey="1">
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="profile" />
+                                Список
+                            </span>
+                        }
+                        key="1"
+                    >
+                        {this.renderList()}
+                    </TabPane>
+                    <TabPane
+                        tab={
+                            <span>
+                                <Icon type="solution" />
+                                Статистика
+                                </span>
+                        }
+                        key="2"
+                    >
+                        <StatisticModule
+                            squadId={squadId}
+                        />
+                    </TabPane>
+                </Tabs> : this.renderList()}
+            </Content>
         );
     };
 };
 
-
-const mapStateToProps = (state) => {
-    const { role } = state;
-    return {role};
-}
-
-export default connect(mapStateToProps)(List);
+export default List;
