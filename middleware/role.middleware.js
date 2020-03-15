@@ -8,16 +8,19 @@ module.exports = (req, res, next) => {
 
     try {
         const token = req.headers.authorization.split(' ')[1];
-        
+
         if (!token) {
             return res.status(401).json({ message: 'Нет авторизации' });
         }
 
         const decoded = jwt.verify(token, config.get('jwtSecret'));
         req.user = decoded
-        next()
+        let role = decoded.role
+        if (role === '5e25ff721c9d440000dd41a1') {
+            next()
+        } else throw new Error('Недостаточно прав');
+        
     } catch (error) {
-        console.log(error)
-        return res.status(401).json({ message: 'Нет авторизации' });
+        return res.status(401).json({ message: 'Недостаточно прав' });
     }
 }

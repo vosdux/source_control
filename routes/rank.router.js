@@ -1,9 +1,10 @@
 const { Router } = require('express');
 const Rank = require('../models/Rank');
+const auth = require('../middleware/auth.middleware');
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
         try {
             const ranks = await Rank.find()
             res.json({ ranks });

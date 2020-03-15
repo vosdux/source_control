@@ -7,6 +7,7 @@ const Norm = require('../models/Norm');
 const multer = require('multer');
 const path = require('path');
 const auth = require('../middleware/auth.middleware');
+const role = require('../middleware/role.middleware');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -43,7 +44,7 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, role, async (req, res) => {
     try {
         let name = req.body.name;
         let squad = await Squad.create({ name });
@@ -54,7 +55,7 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-router.put('/:squadId', auth, async (req, res) => {
+router.put('/:squadId', auth, role, async (req, res) => {
     try {
         let squad = await Squad.findByIdAndUpdate(req.params.squadId, { $set: { name: req.body.name } });
         res.json({ squad })
@@ -63,7 +64,7 @@ router.put('/:squadId', auth, async (req, res) => {
     }
 });
 
-router.delete('/:squadId', auth, async (req, res) => {
+router.delete('/:squadId', role, auth, async (req, res) => {
     try {
         await Squad.findByIdAndRemove(req.params.squadId);
         res.json({ message: 'Удалено' });
@@ -86,7 +87,7 @@ router.get('/:squadId', auth, async (req, res) => {
     }
 });
 
-router.post('/:squadId', auth, async (req, res) => {
+router.post('/:squadId', auth, role, async (req, res) => {
     try {
         let station = await Station.create(req.body);
         res.json({ station });
@@ -95,7 +96,7 @@ router.post('/:squadId', auth, async (req, res) => {
     }
 });
 
-router.put('/:squadId/:stationId', auth, async (req, res) => {
+router.put('/:squadId/:stationId', auth, role, async (req, res) => {
     try {
         let station = await Station.findByIdAndUpdate(req.params.stationId, { $set: req.body });
         res.json({ station })
@@ -104,7 +105,7 @@ router.put('/:squadId/:stationId', auth, async (req, res) => {
     }
 });
 
-router.delete('/:squadId/:stationId', auth, async (req, res) => {
+router.delete('/:squadId/:stationId', role, auth, async (req, res) => {
     try {
         await Station.findByIdAndRemove(req.params.stationId);
         res.json({ message: 'Удалено' })
@@ -147,6 +148,25 @@ router.get('/:squadId/:stationId/:peopleId', auth, async (req, res) => {
     }
 });
 
+router.post('/:squadId/:stationId/', auth, async (req, res) => {
+    try {
+        upload(req, res, err => {
+            if (err && err.code === 'LIMIT_FILE_SIZE') {
+                throw new Error('Картинка не более 2мб')
+            }
+            if (err && err.code === 'EXTENSION') {
+                throw new Error('Только jpg или png')
+            }
+        });
+
+        const people = await People.create(req.body);
+        res.json({ people });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: 'Что-то пошло не так' });
+    }
+});
+
 router.put('/:squadId/:stationId/:peopleId', auth, async (req, res) => {
     try {
         let people = await People.findByIdAndUpdate(req.params.peopleId, { $set: req.body });
@@ -169,24 +189,5 @@ router.delete('/:squadId/:stationId/:peopleId', auth, async (req, res) => {
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 });
-
-router.post('/:squadId/:stationId/', auth, async (req, res) => {
-    try {
-        upload(req, res, err => {
-            if (err && err.code === 'LIMIT_FILE_SIZE') {
-                throw new Error('Картинка не более 2мб')
-            }
-            if (err && err.code === 'EXTENSION') {
-                throw new Error('Только jpg или png')
-            }
-        });
-
-        const people = await People.create(req.body);
-        res.json({ people });
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: 'Что-то пошло не так' });
-    }
-})
 
 module.exports = router;

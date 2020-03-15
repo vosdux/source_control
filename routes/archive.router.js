@@ -1,10 +1,11 @@
 const { Router } = require('express');
 const Archive = require('../models/Archive');
 const Norm = require('../models/Norm');
+const auth = require('../middleware/auth.middleware');
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         let findObj = {};
         if (req.query.search) {
@@ -25,7 +26,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:peopleId', async (req, res) => {
+router.get('/:peopleId', auth, async (req, res) => {
     try {
         const people = await Archive.findById(req.params.peopleId).populate('rank').populate('propertyes.property').exec();
         const norm = await Norm.findOne({ owners: { "$in": people.rank._id } }).populate('properties.property')

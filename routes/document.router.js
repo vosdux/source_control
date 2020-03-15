@@ -1,11 +1,12 @@
 const { Router } = require('express');
 const docx = require('docx');
+const auth = require('../middleware/auth.middleware');
 
 const router = Router();
 
 const { Document, Packer, Paragraph, TextRun, StreamPacker } = docx;
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
     console.log('document-router')
     const doc = new Document();
 

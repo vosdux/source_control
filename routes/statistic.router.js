@@ -1,16 +1,12 @@
 const { Router } = require('express');
-const Squad = require('../models/Squad');
 const Station = require('../models/Station');
 const People = require('../models/People');
-const Property = require('../models/Property');
 const Norm = require('../models/Norm');
-const Rank = require('../models/Rank');
-const multer = require('multer');
-const path = require('path');
 const moment = require('moment')
 const router = Router();
+const auth = require('../middleware/auth.middleware');
 
-router.get('/squad/:id', async (req, res) => {
+router.get('/squad/:id', auth, async (req, res) => {
     try {
         let stations = await Station.find({ squad: req.params.id });
         let squadOkCounter = 0;
@@ -78,7 +74,7 @@ router.get('/squad/:id', async (req, res) => {
     }
 })
 
-router.get('/station/:id', async (req, res) => {
+router.get('/station/:id', auth, async (req, res) => {
     try {
         let peoples = await People.find({ station: req.params.id }, { rank: 1, propertyes: 1 }).populate('rank');
         peoples = JSON.parse(JSON.stringify(peoples));

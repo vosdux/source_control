@@ -1,16 +1,10 @@
 const { Router } = require('express');
-const Squad = require('../models/Squad');
-const Station = require('../models/Station');
 const People = require('../models/People');
-const Property = require('../models/Property');
-const Norm = require('../models/Norm');
-const Rank = require('../models/Rank');
-
-
+const auth = require('../middleware/auth.middleware');
 
 const router = Router();
 
-router.put('/:peopleId/add-property', async (req, res) => {
+router.put('/:peopleId/add-property', auth, async (req, res) => {
     try {
         console.log(req.body.result)
         let promises = req.body.result.map(async (item) => {
@@ -33,7 +27,7 @@ router.put('/:peopleId/add-property', async (req, res) => {
     }
 });
 
-router.put('/:peopleId/discard/:id', async (req, res) => {
+router.put('/:peopleId/discard/:id', auth, async (req, res) => {
     try {
         let people = await People.findOneAndUpdate({ _id: req.params.peopleId, propertyes: { $elemMatch: { _id: req.params.id } } }, { $set: { 'propertyes.$.discarded': true } }, { new: true })
             .populate('propertyes.property');
