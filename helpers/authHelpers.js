@@ -13,12 +13,12 @@ const generateAccessToken = (userId, role) => {
     return token;
 };
 
-const generateRefreshToken = () => {
+const generateRefreshToken = (role) => {
     const id = uuid();
     const token = jwt.sign(
-        { id, type: 'refresh' },
+        { id, role, type: 'refresh' },
         config.get('jwtSecret'),
-        { expiresIn: '24h' }
+        { expiresIn: '365d' }
     );
 
     return { token, id };

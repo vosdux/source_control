@@ -12,7 +12,7 @@ class Squads extends Component {
                 title: 'Наименование',
                 dataIndex: 'name',
                 key: 'name',
-                render: (text, record) => <Link to={`/${record._id}`} >{text}</Link>
+                render: (text, record) => <Link to={`/squads/${record._id}`} >{text}</Link>
             }
         ],
         permissons: {
@@ -51,7 +51,7 @@ class Squads extends Component {
         return (
             <List
                 title='Отряды ФПС МЧС России по Московской области'
-                dataUrl='http://localhost:5000/api/squad/'
+                dataUrl='api/squad/'
                 AddForm={this.AddForm}
                 columns={columns}
                 permissons={permissons}

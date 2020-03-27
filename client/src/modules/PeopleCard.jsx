@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { Layout, Modal, Icon, Menu, Tabs, } from 'antd';
 import PropertyForm from '../components/Forms/PropertyForm';
 import PropertyList from '../components/PropertyList';
 import Dismissal from '../components/Dismissal';
 import ProfileCard from '../components/ProfileCard';
-import { getAccessToken, refreshToken } from '../helpers/Utils';
+import { http } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 
 class PeopleCard extends Component {
@@ -26,17 +25,13 @@ class PeopleCard extends Component {
 
     getPeopleData = async () => {
         try {
+            const { location: { pathname } } = this.props;
             const { archived, location } = this.props;
-            let url = `http://localhost:5000/api/squad/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}`;
+            let url = `api/squad/${pathname.split('/')[2]}/${location.pathname.split('/')[3]}/${pathname.split('/')[4]}`;
             if (archived) {
-                url = `http://localhost:5000/api/archive/${location.pathname.split('/')[2]}`;
+                url = `api/archive/${pathname.split('/')[3]}`;
             }
-            await refreshToken();
-            const response = await axios({
-                method: 'get',
-                url,
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            })
+            const response = await http(url);
             if (response.status === 200) {
                 const { data } = response;
                 if (data) {
@@ -44,24 +39,19 @@ class PeopleCard extends Component {
                 }
             }
         } catch (error) {
-            errorModalCreate(error.message)
+            errorModalCreate(error.response.data.message);
         }
     };
 
     archivePeople = async () => {
         try {
             const { location: { pathname } } = this.props;
-            await refreshToken();
-            const response = await axios({
-                method: 'delete',
-                url: `http://localhost:5000/api/squad/${pathname.split('/')[1]}/${pathname.split('/')[2]}/${pathname.split('/')[3]}`,
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const response = await http(`api/squad/${pathname.split('/')[2]}/${pathname.split('/')[3]}/${pathname.split('/')[4]}`, 'delete');
             if (response.status === 200) {
-                this.props.history.push(`http://localhost:5000/api/squad/${pathname.split('/')[1]}/${pathname.split('/')[2]}/`);
+                //this.props.history.push(`http://localhost:5000/api/squad/${pathname.split('/')[1]}/${pathname.split('/')[2]}/`);
             }
         } catch (error) {
-            errorModalCreate(error.message);
+            errorModalCreate(error.response.data.message);
         }
     }
 
@@ -194,7 +184,7 @@ class PeopleCard extends Component {
                     >
                         <PropertyForm
                             properties={norm && norm.properties}
-                            peopleId={this.props.location.pathname.split('/')[3]}
+                            peopleId={this.props.location.pathname.split('/')[4]}
                             closeModal={this.closeModal}
                             getPeopleData={this.onGetPeopleData}
                             isDocumentModal={isDocumentModal}
@@ -209,7 +199,7 @@ class PeopleCard extends Component {
                         footer={false}
                     >
                         <PropertyList
-                            peopleId={this.props.location.pathname.split('/')[3]}
+                            peopleId={this.props.location.pathname.split('/')[4]}
                             property={property}
                             propertyCountNorm={propertyCountNorm}
                             propertyId={propertyId}

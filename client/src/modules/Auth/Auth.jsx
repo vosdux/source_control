@@ -1,14 +1,39 @@
 import React, { Component } from 'react';
 import { Form, Icon, Input, Button, Row, Col, Card } from 'antd';
 import { connect } from 'react-redux';
+import axios from 'axios';
 import { errorModalCreate } from '../../helpers/Modals';
 import * as actions from '../../store/actions';
-import axios from 'axios';
 
 class NormalLoginForm extends Component {
     state = {
         loading: false
     };
+
+    auth = async (values) => {
+        try {
+            const response = await axios({
+                url: `${process.env.REACT_APP_BASE}api/auth/login`,
+                method: 'post',
+                data: values
+            });
+            if (response.status === 200) {
+                const { data } = response;
+                console.log(data)
+                if (data) {
+                    this.loginHandler(data.accessToken, data.refreshToken, data.role, data.expiredIn)
+                }
+            }
+            
+        } catch (error) {
+            if (error.response) {
+                this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+            } else {
+                this.setState({ loading: false }, () => errorModalCreate(error.message));
+            }
+            
+        }
+    }
 
     loginHandler = (accessToken, refreshToken, role, expiredIn) => {
         localStorage.setItem('userData', JSON.stringify({
@@ -20,36 +45,11 @@ class NormalLoginForm extends Component {
         this.props.userLoginAction(true, role);
     }
 
-    handleSubmit = e => {
+    handleSubmit = async (e) => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                this.setState({ loading: true });
-                axios({
-                    method: 'post',
-                    url: 'http://localhost:5000/api/auth/login',
-                    data: values
-                })
-                    .then(response => {
-                        if (response.status === 200) {
-                            const { data } = response;
-                            console.log(data)
-                            if (data) {
-                                this.loginHandler(data.accessToken, data.refreshToken, data.role, data.expiredIn)
-                            }
-                        } else {
-                            console.log(response);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.response !== undefined) {
-                            errorModalCreate(error.response.data.message);
-                        } else {
-                            errorModalCreate(error);
-                        }
-                    })
-
-                this.setState({ loading: false });
+                this.auth(values);
             }
         });
     };

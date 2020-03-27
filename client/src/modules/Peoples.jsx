@@ -12,7 +12,7 @@ class Peoples extends Component {
                 {
                     title: 'Имя',
                     dataIndex: 'fullName',
-                    render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
+                    render: (text, record) => <Link to={`/squads/${this.props.location.pathname.split('/')[2]}/${this.props.location.pathname.split('/')[3]}/${record._id}`} >{text}</Link>
                 },
                 {
                     title: 'Звание',
@@ -47,12 +47,12 @@ class Peoples extends Component {
 
     render() {
         const { columns, permissons } = this.state;
-        const squadId = this.props.location.pathname.split('/')[1];
-        const stationId = this.props.location.pathname.split('/')[2];
+        const squadId = this.props.location.pathname.split('/')[2];
+        const stationId = this.props.location.pathname.split('/')[3];
         return (
             <List
                 title='Сотрудники'
-                dataUrl={`http://localhost:5000/api/squad/${squadId}/${stationId}/`}
+                dataUrl={`api/squad/${squadId}/${stationId}/`}
                 AddForm={this.AddForm}
                 columns={columns}
                 permissons={permissons}

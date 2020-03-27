@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button, InputNumber } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
 import { http } from '../../helpers/Utils';
 
@@ -9,7 +9,7 @@ class AdminForm extends Component {
         try {
             const { mode, editbleData, getItems } = this.props;
             const method = mode === 'create' ? 'post' : 'put';
-            const response = await http(`http://localhost:5000/api/squad/${mode === 'create' ? '' : editbleData._id}`, method, values);
+            const response = await http(`api/property/${mode === 'create' ? '' : editbleData._id}`, method, values);
             if (response.status === 200) {
                 getItems();
             }
@@ -20,14 +20,14 @@ class AdminForm extends Component {
                 this.setState({ loading: false }, () => errorModalCreate(error.message));
             }
         }
-    }
+    };
 
     handleSubmit = e => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                this.saveData(values)
-                this.props.closeModal();
+                this.saveData(values);
+                this.props.closeModal(values);
             }
         });
     };
@@ -37,16 +37,29 @@ class AdminForm extends Component {
         const { getFieldDecorator } = this.props.form;
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
-                <h1>Создание отряда</h1>
+                <h1>Имущество</h1>
                 <Form.Item>
                     {getFieldDecorator('name', {
-                        rules: [{ required: true, message: 'Введите название отряда' }],
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
                         initialValue: mode === 'edit' ? editbleData.name : ''
                     })(
-                        <Input
-                            prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            placeholder="Название отряда"
-                        />,
+                        <Input placeholder="Название" />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('fieldName', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.fieldName : ''
+                    })(
+                        <Input placeholder="Англ. название" />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('lifeTime', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.lifeTime : ''
+                    })(
+                        <InputNumber style={{ width: '100%' }} placeholder="Срок службы в годах" />,
                     )}
                 </Form.Item>
                 <Form.Item>
@@ -56,9 +69,9 @@ class AdminForm extends Component {
                 </Form.Item>
             </Form>
         );
-    }
-}
+    };
+};
 
-const SquadForm = Form.create({ name: 'squad_form' })(AdminForm);
+const PropertyForm = Form.create({ name: 'property_form' })(AdminForm);
 
-export default SquadForm;
+export default PropertyForm;

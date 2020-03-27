@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { getAccessToken } from '../helpers/Utils';
+import { http } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 import { Button, Col, Row, Statistic, Table, Spin } from 'antd';
 
@@ -26,32 +25,25 @@ class StatisticModule extends Component {
         this.getStatistic();
     };
 
-    getStatistic = () => {
-        const { squadId, stationId } = this.props;
-        let url;
-        if (stationId) {
-            url = `http://localhost:5000/api/statistic/station/${stationId}`
-        } else if (squadId) {
-            url = `http://localhost:5000/api/statistic/squad/${squadId}`
-        }
-        axios({
-            method: 'get',
-            url,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        this.setState({ data, loading: false });
-                    } else {
-                        console.log(response)
-                    }
+    getStatistic = async () => {
+        try {
+            const { squadId, stationId } = this.props;
+            let url;
+            if (stationId) {
+                url = `api/statistic/station/${stationId}`
+            } else if (squadId) {
+                url = `api/statistic/squad/${squadId}`
+            }
+            const response = await http(url);
+            if (response.status === 200) {
+                const { data } = response;
+                if (data) {
+                    this.setState({ data, loading: false });
                 }
-            })
-            .catch((error) => {
-                this.setState({ loading: false}, () => errorModalCreate(error.message))
-            });
+            }
+        } catch (error) {
+            this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+        }
     };
 
     render() {

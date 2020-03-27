@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { getAccessToken, refreshToken } from '../helpers/Utils';
+import { http } from '../helpers/Utils';
 import { Table, Button, Modal, Icon, Layout, Tabs, Input } from 'antd';
 import StatisticModule from './Statistic';
 import { errorModalCreate } from '../helpers/Modals';
@@ -35,12 +34,7 @@ class List extends Component {
             const pageParam = `?page=${page}`;
             const sizeParam = `&size=${size}`;
             const searchParam = `&search=${search}`;
-            await refreshToken();
-            const response = await axios({
-                method: 'get',
-                url: dataUrl + pageParam + sizeParam + (enableSearch ? searchParam : ''),
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const response = await http(dataUrl + pageParam + sizeParam + (enableSearch ? searchParam : ''));
             if (response.status === 200) {
                 if (response.data) {
                     const { data } = response;
@@ -52,25 +46,23 @@ class List extends Component {
                 }
             }
         } catch (error) {
-            this.setState({ loading: false }, () => errorModalCreate(error.message))
+            if (error.response) {
+                this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+            } else {
+                this.setState({ loading: false }, () => errorModalCreate(error.message));
+            }
         }
-
     };
 
     deleteItem = async (id) => {
         try {
             const { dataUrl } = this.props;
-            await refreshToken();
-            const response = await axios({
-                method: 'delete',
-                url: dataUrl + id,
-                headers: { "Authorization": `Bearer ${getAccessToken()}` },
-            });
+            const response = await http(dataUrl + id, 'delete'); 
             if (response.status === 200) {
                 this.getData();
             }
         } catch (error) {
-            errorModalCreate(error.message)
+            errorModalCreate(error.response.data.message)
         }
     };
 

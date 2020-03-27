@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Icon, Input, Button, Upload, Select } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken, refreshToken } from '../../helpers/Utils';
-import axios from 'axios';
+import { http } from '../../helpers/Utils';
 
 class AdminForm extends Component {
     state = {
@@ -19,12 +18,7 @@ class AdminForm extends Component {
 
     getRanks = async () => {
         try {
-            await refreshToken();
-            const response = await axios({
-                method: 'get',
-                url: `http://localhost:5000/api/rank/`,
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const response = await http(`api/rank/`);
             if (response.status === 200) {
                 const { data } = response;
                 if (data) {
@@ -66,17 +60,13 @@ class AdminForm extends Component {
         try {
             const { mode, editbleData, squadId, stationId, getItems } = this.props;
             const { imageUrl } = this.state;
-            await refreshToken();
-            const response = await axios({
-                method: mode === 'create' ? 'post' : 'put',
-                url: `http://localhost:5000/api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`,
-                data: {
-                    ...values,
-                    upload: imageUrl,
-                    station: stationId
-                },
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const method = mode === 'create' ? 'post' : 'put';
+            const data = {
+                ...values,
+                upload: imageUrl,
+                station: stationId
+            }
+            const response = await http(`api/squad/${squadId}/${stationId}/${mode === 'create' ? '' : editbleData._id}`, method, data);
             if (response.status === 200) {
                 getItems();
             }

@@ -14,7 +14,7 @@ class Stations extends Component {
                     title: 'Наименование',
                     dataIndex: 'name',
                     key: 'name',
-                    render: (text, record) => <Link to={`/${this.props.location.pathname.split('/')[1]}/${record._id}`} >{text}</Link>
+                    render: (text, record) => <Link to={`/squads/${this.props.location.pathname.split('/')[2]}/${record._id}`} >{text}</Link>
                 },
                 {
                     title: 'Город',
@@ -56,11 +56,11 @@ class Stations extends Component {
 
     render() {
         const { columns, permissons } = this.state;
-        const squadId = this.props.location.pathname.split('/')[1];
+        const squadId = this.props.location.pathname.split('/')[2];
         return (
             <List
                 title='Пожарные части'
-                dataUrl={`http://localhost:5000/api/squad/${squadId}/`}
+                dataUrl={`api/squad/${squadId}/`}
                 AddForm={this.AddForm}
                 columns={columns}
                 permissons={permissons}

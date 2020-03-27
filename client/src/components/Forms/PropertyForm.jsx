@@ -1,8 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Form, Button, Checkbox, DatePicker, Divider, InputNumber } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken, refreshToken } from '../../helpers/Utils';
-import axios from 'axios';
+import { http } from '../../helpers/Utils';
 import moment from 'moment';
 
 class PForm extends Component {
@@ -34,21 +33,13 @@ class PForm extends Component {
     giveProperty = async (result) => {
         try {
             const { peopleId, isDocumentModal, getPeopleData } = this.props;
-            let url = `http://localhost:5000/api/property/${peopleId}/add-property`;
+            let url = `api/property/${peopleId}/add-property`;
             let method = 'put';
             if (isDocumentModal) {
-                url = `http://localhost:5000/api/document-creator`;
+                url = `api/document-creator`;
                 method = 'get';
             }
-            await refreshToken();
-            const response = await axios({
-                method,
-                url,
-                data: {
-                    result,
-                },
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const response = await http(url, method, result)
             if (response.status === 200) {
                 !isDocumentModal && getPeopleData();
             }

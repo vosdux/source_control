@@ -1,10 +1,9 @@
-
 import moment from 'moment';
 import axios from 'axios';
 
 export function convertTimeValue(time) {
     return time < 10 ? '0' + time.slice(-2) : time
-}
+};
 
 export function getAccessToken() {
     let data = localStorage.getItem('userData');
@@ -17,11 +16,13 @@ export function getAccessToken() {
 
 export const getRole = (roleId) => {
     if (roleId === '5e25ff721c9d440000dd41a1') {
-        return 'admin'
+        return 'admin';
     } else if (roleId === '5e25ff7b1c9d440000dd41a2') {
-        return 'specialist'
+        return 'specialist';
+    } else if (roleId === '5e78e35b1c9d44000007ece8') {
+        return 'storage';
     }
-}
+};
 
 export const isLifeTimeEnd = (item) => {
     let date = item.date && item.date.split('T')[0];
@@ -31,7 +32,7 @@ export const isLifeTimeEnd = (item) => {
     let lifeTime = moment(lifeTimeEnd).isAfter(now);
 
     return lifeTime;
-}
+};
 
 export const refreshToken = async () => {
     let data = localStorage.getItem('userData');
@@ -61,4 +62,17 @@ export const refreshToken = async () => {
             }
         }
     }
-}
+};
+
+export const http = async (url, method = 'get', body) => {
+    let obj = {
+        url: `${process.env.REACT_APP_BASE}${url}`,
+        method,
+        headers: { "Authorization": `Bearer ${getAccessToken()}` }
+    };
+    if (body) {
+        obj.data = body;
+    }
+    await refreshToken();
+    return axios(obj);
+};

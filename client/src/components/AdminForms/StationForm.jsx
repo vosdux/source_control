@@ -1,24 +1,19 @@
 import React, { Component } from 'react';
 import { Form, Icon, Input, Button } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
-import { getAccessToken, refreshToken } from '../../helpers/Utils';
-import axios from 'axios';
+import { http } from '../../helpers/Utils';
 
 class AdminForm extends Component {
 
     saveData = async (values) => {
         try {
             const { mode, editbleData, squadId, getItems } = this.props;
-            await refreshToken();
-            const response = await axios({
-                method: mode === 'create' ? 'post' : 'put',
-                url: `http://localhost:5000/api/squad/${squadId}/${mode === 'create' ? '' : editbleData._id}`,
-                headers: { "Authorization": `Bearer ${getAccessToken()}` },
-                data: {
-                    ...values,
-                    squad: squadId
-                }
-            });
+            const method = mode === 'create' ? 'post' : 'put';
+            const data = {
+                ...values,
+                squad: squadId
+            };
+            const response = await http(`api/squad/${squadId}/${mode === 'create' ? '' : editbleData._id}`, method, data);
             if (response.status === 200) {
                 getItems();
             }

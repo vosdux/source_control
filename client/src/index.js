@@ -15,7 +15,7 @@ const initialState = {
     role: null
 }
 const store = createStore(reducer, initialState);
-const history = createBrowserHistory()
+const history = createBrowserHistory();
 
 ReactDOM.render(
         <BrowserRouter history={history}>

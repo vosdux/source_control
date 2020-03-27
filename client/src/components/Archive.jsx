@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { getAccessToken } from '../helpers/Utils';
+import { http } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
 import { Table, Layout, Input } from 'antd';
 import { Link } from 'react-router-dom';
@@ -35,33 +34,30 @@ class Archive extends Component {
         this.getArchive();
     };
 
-    getArchive = () => {
-        const { page, size, search } = this.state;
-        let pageParam = `?page=${page}`;
-        let sizeParam = `&size=${size}`;
-        let searchParam = `&search=${search}`;
-        let url = `http://localhost:5000/api/archive/${pageParam}${sizeParam}${searchParam}`
-        axios({
-            method: 'get',
-            url,
-            headers: { "Authorization": `Bearer ${getAccessToken()}` }
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    const { data } = response;
-                    if (data) {
-                        this.setState({
-                            data: data.archive,
-                            loading: false
-                        }, () => this.formatPeople());
-                    } else {
-                        console.log(response)
-                    }
+    getArchive = async () => {
+        try {
+            console.log('fetch')
+            const { page, size, search } = this.state;
+            let pageParam = `?page=${page}`;
+            let sizeParam = `&size=${size}`;
+            let searchParam = `&search=${search}`;
+            const response = await http(`api/archive${pageParam}${sizeParam}${searchParam}`);
+            if (response.status === 200) {
+                const { data } = response;
+                if (data) {
+                    this.setState({
+                        data: data.archive,
+                        loading: false
+                    }, () => this.formatPeople());
                 }
-            })
-            .catch((error) => {
-                this.setState({ loading: false }, () => errorModalCreate(error.message))
-            });
+            }
+        } catch (error) {
+            if (error.response) {
+                this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+            } else {
+                this.setState({ loading: false }, () => errorModalCreate(error.message));
+            }
+        }
     };
 
     formatPeople = () => {
@@ -74,6 +70,7 @@ class Archive extends Component {
                 position: item.position
             }
         });
+        console.log(newData)
         this.setState({ formatedData: newData })
     };
 
@@ -86,12 +83,13 @@ class Archive extends Component {
     };
 
     handleSearchChange = (value) => {
-        this.setState({search: value}, () => this.getArchive());
+        this.setState({ search: value }, () => this.getArchive());
     }
 
     render() {
         const { columns, loading, totalElements, formatedData } = this.state;
         const { Content } = Layout;
+        console.log(formatedData)
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <h1>Архив</h1>

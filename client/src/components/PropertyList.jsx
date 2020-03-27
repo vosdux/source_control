@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { Table, Icon, Typography, Button } from 'antd';
-import axios from 'axios';
-import { isLifeTimeEnd, refreshToken } from '../helpers/Utils';
+import { isLifeTimeEnd, http } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
-import { getAccessToken } from '../helpers/Utils';
 
 class PropertyList extends Component {
     state = {
@@ -36,14 +34,7 @@ class PropertyList extends Component {
     discardProperty = async (record) => {
         try {
             const { peopleId, propertyId } = this.props;
-            let url = `http://localhost:5000/api/property/${peopleId}/discard/${record._id}`;
-            await refreshToken();
-            const response = await axios({
-                method: 'put',
-                url,
-                data: {},
-                headers: { "Authorization": `Bearer ${getAccessToken()}` }
-            });
+            const response = await http(`api/property/${peopleId}/discard/${record._id}`, 'put', {});
             if (response.status === 200) {
                 const { data } = response;
                 let property = data.people.propertyes.filter(elem => elem.property._id === propertyId)

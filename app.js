@@ -15,11 +15,14 @@ app.use('/api/statistic', require('./routes/statistic.router'));
 app.use('/api/document-creator', require('./routes/document.router'));
 app.use('/api/rank', require('./routes/rank.router'));
 app.use('/api/archive', require('./routes/archive.router'));
+app.use('/api/norm', require('./routes/norm.router'));
+app.use('/api/storage', require('./routes/storage.router'));
 
 const PORT = config.get('port');
 
 async function start() {
     try {
+        mongoose.set('useFindAndModify', false);
         await mongoose.connect(config.get('mongoUri'), {
             useNewUrlParser: true,
             useUnifiedTopology: true,

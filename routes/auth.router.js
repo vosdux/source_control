@@ -12,7 +12,7 @@ const authHelper = require('../helpers/authHelpers');
 const updateToken = async (userId, role) => {
     try {
         const accessToken = authHelper.generateAccessToken(userId, role);
-        const refreshToken = authHelper.generateRefreshToken();
+        const refreshToken = authHelper.generateRefreshToken(role);
         await authHelper.replaceDbRefreshToken(refreshToken.id, userId);
 
         return { accessToken, refreshToken: refreshToken.token };
@@ -77,18 +77,17 @@ router.post('/refresh-token', async (req, res) => {
             res.status(400).json({ message: 'Неверный токен!' });
         }
 
-        const tokens = await updateToken(tokenData.userId);
+        const tokens = await updateToken(tokenData.userId, payload.role);
         let now = new Date();
         let expiredIn = Date.parse(now) + 900000;
 
         res.json({ ...tokens, expiredIn });
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ message: 'Токен протух' });
+            res.status(400).json({ message: 'Ошибка. Перезайдите в приложение!', });
         } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ message: 'Неверный токен' });
+            res.status(400).json({ message: 'Ошибка. Перезайдите в приложение!' });
         }
-        console.log(error)
         res.status(500).json({ message: 'Что-то пошло не так' });
     }
 })
