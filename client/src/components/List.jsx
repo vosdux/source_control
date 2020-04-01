@@ -30,15 +30,19 @@ class List extends Component {
     getData = async () => {
         try {
             const { dataUrl, enableSearch, formatDataRules } = this.props;
-            const { page, size, search } = this.state
+            const { page, size, search, sorter } = this.state
             const pageParam = `?page=${page}`;
             const sizeParam = `&size=${size}`;
             const searchParam = `&search=${search}`;
-            const response = await http(dataUrl + pageParam + sizeParam + (enableSearch ? searchParam : ''));
+            let sortParam = '';
+            if (sorter) {
+                sortParam = `&sort=${sorter.field};${sorter.order}`;
+            }
+            const response = await http(dataUrl + pageParam + sizeParam + (enableSearch ? searchParam : '') + sortParam);
             if (response.status === 200) {
                 if (response.data) {
                     const { data } = response;
-                    this.setState({ data: data.content, loading: false }, () => {
+                    this.setState({ data: data.content, totalElements: data.totalElements, loading: false }, () => {
                         if (formatDataRules) {
                             this.formatData();
                         }
@@ -57,7 +61,7 @@ class List extends Component {
     deleteItem = async (id) => {
         try {
             const { dataUrl } = this.props;
-            const response = await http(dataUrl + id, 'delete'); 
+            const response = await http(dataUrl + id, 'delete');
             if (response.status === 200) {
                 this.getData();
             }
@@ -83,7 +87,16 @@ class List extends Component {
 
     handleSearchChange = (value) => {
         this.setState({ search: value }, () => this.getData());
-    }
+    };
+
+    handleTableChange = (pagination, filter, sorter) => {
+        this.setState({
+            loading: true,
+            size: pagination.pageSize,
+            page: --pagination.current,
+            sorter
+        }, () => this.getData());
+    };
 
     getColumns = () => {
         const { permissons, columns } = this.props;
@@ -107,7 +120,7 @@ class List extends Component {
     };
 
     renderList = () => {
-        const { data, loading, modalVisible, mode, editbleData, columns } = this.state;
+        const { data, loading, modalVisible, mode, editbleData, columns, totalElements } = this.state;
         const { title, AddForm, squadId, permissons, enableSearch, stationId } = this.props;
         return (
             <>
@@ -124,6 +137,10 @@ class List extends Component {
                     columns={columns}
                     dataSource={data}
                     loading={loading}
+                    onChange={this.handleTableChange}
+                    pagination={{
+                        total: totalElements
+                    }}
                     rowKey={(record) => record._id}
                 />
                 {permissons.add && <Modal

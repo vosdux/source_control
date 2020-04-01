@@ -39,7 +39,7 @@ class PForm extends Component {
                 url = `api/document-creator`;
                 method = 'get';
             }
-            const response = await http(url, method, result)
+            const response = await http(url, method, {result})
             if (response.status === 200) {
                 !isDocumentModal && getPeopleData();
             }

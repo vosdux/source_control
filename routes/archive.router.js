@@ -14,14 +14,14 @@ router.get('/', auth, roleMiddle(['admin', 'specialist']), async (req, res) => {
         if (req.query.search) {
             findObj = { $text: { $search: req.query.search } };
         }
+        const totalElements = await Archive.find().count();
         const archive = await Archive.find(findObj, { name: 1, secondName: 1, midleName: 1, rank: 1, position: 1 })
             .sort({ secondName: 1 })
             .populate('rank')
             .skip((req.query.size * req.query.page))
             .limit(+req.query.size)
             .exec();
-
-        res.json({ archive, totalElements: archive.length });
+        res.json({ archive, totalElements });
 
     } catch (error) {
         console.log(error)

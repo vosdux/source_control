@@ -95,7 +95,7 @@ class Storage extends Component {
         });
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                <Tabs activeKey={`${activeKey}`} tabPosition='left' onChange={this.onTabChange}>
+                <Tabs activeKey={`${activeKey}`} tabPosition='left' onChange={this.onTabChange} style={{ height: 500 }}>
                     {data && data.map((item, index) => {
                         let property;
                         if (storage) {

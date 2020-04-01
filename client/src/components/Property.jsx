@@ -7,7 +7,9 @@ class Property extends Component {
         columns: [
             {
                 title: 'Наименвание',
-                dataIndex: 'name'
+                dataIndex: 'name',
+                sorter: true,
+                defaultSortOrder: 'ascend'
             },
             {
                 title: 'Англ. наименование',

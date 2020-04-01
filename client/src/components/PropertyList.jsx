@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Table, Icon, Typography, Button } from 'antd';
 import { isLifeTimeEnd, http } from '../helpers/Utils';
 import { errorModalCreate } from '../helpers/Modals';
+import moment from 'moment';
 
 class PropertyList extends Component {
     state = {
@@ -12,7 +13,9 @@ class PropertyList extends Component {
             },
             {
                 title: 'Дата выдачи',
-                dataIndex: 'date'
+                dataIndex: 'date',
+                defaultSortOrder: 'ascend',
+                sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix() 
             },
             {
                 title: 'Срок службы',
@@ -74,7 +77,7 @@ class PropertyList extends Component {
             }
         });
         let complete = false;
-        if (givenCounter == propertyCountNorm) {
+        if (givenCounter >= propertyCountNorm) {
             complete = true
         }
         return (

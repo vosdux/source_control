@@ -83,6 +83,7 @@ router.post('/refresh-token', async (req, res) => {
 
         res.json({ ...tokens, expiredIn });
     } catch (error) {
+        console.log('kek')
         if (error instanceof jwt.TokenExpiredError) {
             res.status(400).json({ message: 'Ошибка. Перезайдите в приложение!', });
         } else if (error instanceof jwt.JsonWebTokenError) {

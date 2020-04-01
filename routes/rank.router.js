@@ -9,7 +9,7 @@ const roleMiddle = (roles) => (req, res, next) => role(req, res, next, roles);
 
 router.get('/', auth, roleMiddle(['admin', 'specialist']), async (req, res) => {
     try {
-        const ranks = await Rank.find()
+        const ranks = await Rank.find().sort({rankId: 1})
         res.json({ content: ranks });
 
     } catch (error) {

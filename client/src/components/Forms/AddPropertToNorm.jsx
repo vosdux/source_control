@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select } from 'antd';
+import { Form, Input, Button, Select, InputNumber } from 'antd';
 import { errorModalCreate } from '../../helpers/Modals';
 import { http } from '../../helpers/Utils';
 
@@ -15,7 +15,7 @@ class AddForm extends Component {
 
     getPropertyes = async () => {
         try {
-            const response = http('api/property');
+            const response = await http('api/property');
             if (response.status === 200) {
                 if (response.data) {
                     this.setState({ data: response.data.content, loading: false });
@@ -31,41 +31,62 @@ class AddForm extends Component {
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.props.onSubmit(values);
+                this.props.onCancel();
             }
         });
     };
 
+    onSearch = (val) => {
+        console.log('search:', val);
+    }
+
     render() {
         const { form: { getFieldDecorator } } = this.props;
         const { loading, data } = this.state;
+        const { modalMode } = this.props;
         let options;
         if (data) {
-            options = data.map((item, index) => <Select.Option key={index} value={item._id}>{item.name}</Select.Option>)
+            options = data.map((item, index) => <Select.Option key={index} value={item._id}>{item.name}</Select.Option>);
         }
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
-                <h1>Добавить имущество</h1>
-                <Form.Item>
-                    {getFieldDecorator('property', {
-                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
-                    })(
-                        <Select
-                            placeholder="Выбирите имущество"
-                            loading={loading}
-                        >
-
-                        </Select>,
-                    )}
-                </Form.Item>
-                <Form.Item>
-                    {getFieldDecorator('count', {
-                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
-                    })(
-                        <Input
-                            placeholder="Количество"
-                        />,
-                    )}
-                </Form.Item>
+                {modalMode === 'addProp' ? <>
+                    <Form.Item>
+                        {getFieldDecorator('property', {
+                            rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        })(
+                            <Select
+                                placeholder="Выбирите имущество"
+                                showSearch
+                                onSearch={this.onSearch}
+                                filterOption={(input, option) =>
+                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                loading={loading}
+                            >
+                                {options}
+                            </Select>,
+                        )}
+                    </Form.Item>
+                    <Form.Item>
+                        {getFieldDecorator('count', {
+                            rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        })(
+                            <InputNumber
+                                min={1}
+                                placeholder="Количество"
+                            />,
+                        )}
+                    </Form.Item>
+                </> : <Form.Item>
+                        {getFieldDecorator('name', {
+                            rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        })(
+                            <Input
+                                placeholder="Наименование"
+                            />,
+                        )}
+                    </Form.Item>}
                 <Form.Item>
                     <Button type="primary" htmlType="submit" className="login-form-button">
                         Добавить

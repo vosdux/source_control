@@ -60,10 +60,32 @@ class Norms extends Component {
     editNorms = async () => {
         try {
             const { activeKey, data } = this.state;
-            const response = await http(`api/norm/${data[activeKey]._id}`, 'put', data);
+            const response = await http(`api/norm/${data[activeKey]._id}`, 'put', data[activeKey]);
+            if (response.status === 200) {
+                this.getNorms();
+            }
+        } catch (error) {
+            this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+        }
+    };
+
+    deleteNorm = async () => {
+        try {
+            const { activeKey, data } = this.state;
+            const response = await http(`api/norm/${data[activeKey]._id}`, 'delete');
+            if (response.status === 200) {
+                this.setState({ loading: true }, () => this.getNorms());
+            }
+        } catch (error) {
+            this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
+        }
+    };
+
+    createNorm = async (values) => {
+        try {
+            const response = await http(`api/norm/`, 'post', values);
             if (response.data) {
-                const { data } = response;
-                this.setState({ loading: false, data: data.content });
+                this.setState({ loading: true }, () => this.getNorms());
             }
         } catch (error) {
             this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
@@ -96,7 +118,7 @@ class Norms extends Component {
             editedItem = (page * 10) + index
         }
         newData[activeKey].properties.splice(editedItem, 1);
-        this.setState({ data: newData, edited: true });
+        this.setState({ data: newData, edited: true }, () => console.log(this.state.data));
     };
 
     openEditModal = (index) => {
@@ -108,10 +130,14 @@ class Norms extends Component {
         this.setState({ editModalVisible: true, editedItem, edited: true });
     };
 
-    handleSelectChange = (value) => {
+    openAddModal = (modalMode) => {
+        this.setState({ addModalVisible: true, modalMode });
+    };
+
+    handleSelectChange = (values) => {
         const { activeKey, data } = this.state;
         let newData = data;
-        newData[activeKey].owners = [value];
+        newData[activeKey].owners = values;
         this.setState({ data: newData, edited: true });
     };
 
@@ -134,12 +160,16 @@ class Norms extends Component {
     addProperty = (values) => {
         const { activeKey, data } = this.state;
         let newData = data;
-        newData[activeKey].properties.push(values);
-        this.setState({ data: newData });
-    }
+        if (newData[activeKey].properties) {
+            newData[activeKey].properties.push(values);
+        } else {
+            newData[activeKey].properties = [values];
+        }
+        this.setState({ data: newData, loading: true }, () => this.editNorms());
+    };
 
     render() {
-        const { data, columns, loading, ranks, edited, editModalVisible, activeKey, editedItem, addModalVisible } = this.state;
+        const { data, columns, loading, ranks, edited, editModalVisible, activeKey, editedItem, addModalVisible, modalMode } = this.state;
         const { TabPane } = Tabs;
         const { Content } = Layout;
         let options;
@@ -148,10 +178,13 @@ class Norms extends Component {
         }
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                <Tabs activeKey={`${activeKey}`} tabPosition='left' onChange={this.onTabChange}>
+                <Button type='primary' onClick={() => this.openAddModal('addNorm')}>Добавить норму</Button>
+                <Tabs activeKey={`${activeKey}`} className='mt-2' tabPosition='left' onChange={this.onTabChange}>
                     {data && data.map((item, index) => <TabPane tab={item.name} key={index}>
-                        <Button type='primary' onClick={() => this.setState({ addModalVisible: true })}>Добавить</Button>
+                        <Button type='primary' onClick={() => this.openAddModal('addProp')} className='mr-10px'>Добавить</Button>
+                        <Button type='danger' onClick={this.deleteNorm}>Удалить норму</Button>
                         <Table
+                            className='mt-2'
                             rowKey={(record) => record.property._id}
                             loading={loading}
                             columns={columns}
@@ -160,6 +193,13 @@ class Norms extends Component {
                         />
                         <div className='d-flex'>
                             <Select
+                                className='mt-2'
+                                mode='multiple'
+                                maxTagCount={1}
+                                maxTagPlaceholder={'...'}
+                                style={{ width: '300px' }}
+                                showArrow
+                                placeholder='Выбирите звания'
                                 onChange={(value) => this.handleSelectChange(value)}
                                 defaultValue={item.owners}
                             >
@@ -185,12 +225,17 @@ class Norms extends Component {
                     />
                 </Modal>
                 <Modal
-                    title='Добавить имущество'
+                    title={modalMode === 'addProp' ? 'Добавить имущество' : 'Добавить норму'}
                     visible={addModalVisible}
+                    onCancel={() => this.setState({ addModalVisible: false })}
+                    footer={false}
+                    destroyOnClose
                 >
-                    <AddPropertToNorm
-                        onSubmit={this.addProperty}
-                    />
+                    {<AddPropertToNorm
+                        onSubmit={modalMode === 'addProp' ? this.addProperty : this.createNorm}
+                        onCancel={() => this.setState({ addModalVisible: false })}
+                        modalMode={modalMode}
+                    />}
                 </Modal>
             </Content>
         );

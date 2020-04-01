@@ -14,10 +14,10 @@ module.exports = (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, config.get('jwtSecret'));
-        req.user = decoded
-        next()
+        req.user = decoded;
+        next();
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(401).json({ message: 'Нет авторизации' });
     }
 }

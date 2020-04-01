@@ -4,7 +4,7 @@ const config = require('config');
 module.exports = async (req, res, next, roles) => {
     try {
         if (req.method === 'OPTIONS') {
-            return next()
+            return next();
         }
     
         const rolesList = [
@@ -38,6 +38,7 @@ module.exports = async (req, res, next, roles) => {
         } else throw new Error('Недостаточно прав');
         
     } catch (error) {
+        console.log(error)
         return res.status(401).json({ message: 'Недостаточно прав' });
     }
 }

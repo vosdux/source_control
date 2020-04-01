@@ -10,8 +10,20 @@ const roleMiddle = (roles) => (req, res, next) => role(req, res, next, roles);
 
 router.get('/', auth, roleMiddle(['admin']), async (req, res) => {
     try {
-        const properties = await Property.find().skip((req.query.size * req.query.page)).limit(+req.query.size).exec();;
-        res.json({ content: properties });
+        let sorter = {}
+        console.log(req.query)
+        if (req.query.sort) {
+            const sortField = req.query.sort.split(';')[0];
+            const sortOrder = req.query.sort.split(';')[1] === 'ascend' ? 1 : (req.query.sort.split(';')[1] === 'descend' ? -1 : null);
+            if (sortField && sortOrder) {
+                sorter = {
+                    [sortField]: sortOrder
+                }
+            }
+        }
+        const totalElements = await Property.find().count();
+        const properties = await Property.find().sort(sorter).skip((req.query.size * req.query.page)).limit(+req.query.size).exec();;
+        res.json({ content: properties, totalElements });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Что-то пошло не так' });
@@ -47,8 +59,9 @@ router.delete('/:id', auth, roleMiddle(['admin']), (req, res, next) => role(req,
     }
 });
 
-router.put('/:peopleId/add-property', auth, roleMiddle(['admin', 'specialist']), (req, res, next) => role(req, res, next, ['specialist']), async (req, res) => {
+router.put('/:peopleId/add-property', auth, roleMiddle(['admin', 'specialist']), async (req, res) => {
     try {
+        console.log(req.body)
         let promises = req.body.result.map(async (item) => {
             let propertyes = {
                 property: item.property
@@ -69,7 +82,7 @@ router.put('/:peopleId/add-property', auth, roleMiddle(['admin', 'specialist']),
     }
 });
 
-router.put('/:peopleId/discard/:id', auth, roleMiddle(['admin', 'specialist']), (req, res, next) => role(req, res, next, ['specialist']), async (req, res) => {
+router.put('/:peopleId/discard/:id', auth, roleMiddle(['admin', 'specialist']), async (req, res) => {
     try {
         let people = await People.findOneAndUpdate({ _id: req.params.peopleId, propertyes: { $elemMatch: { _id: req.params.id } } }, { $set: { 'propertyes.$.discarded': true } }, { new: true })
             .populate('propertyes.property');
