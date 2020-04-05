@@ -9,7 +9,7 @@ import Peoples from '../../modules/Peoples';
 import Stations from '../../modules/Stations';
 import { Route, Redirect, Switch } from 'react-router-dom';
 
-export const SpecialistRoutes = () => <Switch>
+export const SpecialistRoutes = (props) => {console.log(props); return (<Switch>
     <Route
         path='/squads'
         exact
@@ -27,9 +27,6 @@ export const SpecialistRoutes = () => <Switch>
         path='/squads/:id'
         component={Stations}
     />
-    
-    
-    
     <Route
         path='/property'
         component={Property}
@@ -55,4 +52,4 @@ export const SpecialistRoutes = () => <Switch>
         component={Property}
     />
     <Redirect to='/squads' />
-</Switch>;
+</Switch>)};

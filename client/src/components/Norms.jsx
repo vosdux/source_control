@@ -34,7 +34,11 @@ class Norms extends Component {
             page: 0,
             edited: false,
             editModalVisible: false,
-            addModalVisible: false
+            addModalVisible: false,
+            sex: [
+                { value: 'male', label: 'Мужчина' },
+                { value: 'female', label: 'Женщина' }
+            ]
         }
     }
 
@@ -134,10 +138,10 @@ class Norms extends Component {
         this.setState({ addModalVisible: true, modalMode });
     };
 
-    handleSelectChange = (values) => {
+    handleSelectChange = (values, name) => {
         const { activeKey, data } = this.state;
         let newData = data;
-        newData[activeKey].owners = values;
+        newData[activeKey][name] = values;
         this.setState({ data: newData, edited: true });
     };
 
@@ -169,13 +173,14 @@ class Norms extends Component {
     };
 
     render() {
-        const { data, columns, loading, ranks, edited, editModalVisible, activeKey, editedItem, addModalVisible, modalMode } = this.state;
+        const { data, columns, loading, ranks, edited, editModalVisible, activeKey, editedItem, addModalVisible, modalMode, sex } = this.state;
         const { TabPane } = Tabs;
         const { Content } = Layout;
-        let options;
+        let options = [];
         if (ranks) {
-            options = ranks.map((item, index) => <Select.Option value={item._id} key={index}>{item.name}</Select.Option>);
+            options = ranks.map((item, index) => <Select.Option value={item._id} key={index}>{item.name}</Select.Option>)
         }
+        const sexOptions = sex.map(item => <Select.Option value={item.value} key={item.value}>{item.label}</Select.Option>)
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <Button type='primary' onClick={() => this.openAddModal('addNorm')}>Добавить норму</Button>
@@ -193,6 +198,14 @@ class Norms extends Component {
                         />
                         <div className='d-flex'>
                             <Select
+                                placeholder='Пол'
+                                defaultValue={item.sex}
+                                className='mr-10px'
+                                onChange={(value) => this.handleSelectChange(value, 'sex')}
+                            >
+                                {sexOptions}
+                            </Select>
+                            <Select
                                 className='mt-2'
                                 mode='multiple'
                                 maxTagCount={1}
@@ -200,7 +213,7 @@ class Norms extends Component {
                                 style={{ width: '300px' }}
                                 showArrow
                                 placeholder='Выбирите звания'
-                                onChange={(value) => this.handleSelectChange(value)}
+                                onChange={(value) => this.handleSelectChange(value, 'owners')}
                                 defaultValue={item.owners}
                             >
                                 {options}

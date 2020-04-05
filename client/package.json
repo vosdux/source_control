@@ -9,6 +9,7 @@
     "antd": "^3.26.7",
     "axios": "^0.19.1",
     "bootstrap-4-react": "0.0.59",
+    "file-saver": "^2.0.2",
     "history": "^4.10.1",
     "moment": "^2.24.0",
     "react": "^16.12.0",

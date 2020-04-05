@@ -10,6 +10,10 @@ class AdminForm extends Component {
             data: [],
             fetching: true
         },
+        sex: [
+            { value: 'male', label: 'Мужчина' },
+            { value: 'female', label: 'Женщина' }
+        ]
     };
 
     componentDidMount() {
@@ -93,12 +97,16 @@ class AdminForm extends Component {
     render() {
         const { mode, editbleData } = this.props;
         const { getFieldDecorator } = this.props.form;
-        const { imageUrl, loading, ranks: { data, fetching } } = this.state;
+        const { imageUrl, loading, ranks: { data, fetching }, sex } = this.state;
         let rankObj = {
             rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
-        }
+        };
+        let sexObj = {
+            rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+        };
         if (mode === 'edit') {
-            rankObj.initialValue = editbleData.rank._id
+            rankObj.initialValue = editbleData.rank._id;
+            sexObj.initialValue = editbleData.sex
         }
         let options = [];
         if (data !== undefined) {
@@ -111,6 +119,7 @@ class AdminForm extends Component {
                 <div className="ant-upload-text">Загрузить</div>
             </div>
         );
+        const sexOptions = sex.map(item => <Select.Option key={item.value} value={item.value}>{item.label}</Select.Option>);
         return (
             <Form onSubmit={this.handleSubmit} className="squad-form">
                 <h1>{mode === 'edit' ? 'Редактирование карточки сотрудника' : 'Создание карточки сотрудника'}</h1>
@@ -148,6 +157,16 @@ class AdminForm extends Component {
                     )}
                 </Form.Item>
                 <Form.Item>
+                    {getFieldDecorator('sex', sexObj)(
+                        <Select
+                            placeholder="Выберите пол"
+                            loading={fetching}
+                        >
+                            {sexOptions}
+                        </Select>
+                    )}
+                </Form.Item>
+                <Form.Item>
                     {getFieldDecorator('idcard', {
                         rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
                         initialValue: mode === 'edit' ? editbleData.idcard : ''
@@ -176,6 +195,39 @@ class AdminForm extends Component {
                         <Input
                             prefix={<Icon type="form" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             placeholder="Должность"
+                        />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('height', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.hieght : ''
+                    })(
+                        <Input
+                            prefix={<Icon type="form" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            placeholder="Рост"
+                        />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('weight', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.weight : ''
+                    })(
+                        <Input
+                            prefix={<Icon type="form" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            placeholder="Вес"
+                        />,
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('size', {
+                        rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
+                        initialValue: mode === 'edit' ? editbleData.size : ''
+                    })(
+                        <Input
+                            prefix={<Icon type="form" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                            placeholder="Размер"
                         />,
                     )}
                 </Form.Item>

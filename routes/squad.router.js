@@ -146,7 +146,7 @@ router.get('/:squadId/:stationId', auth, roleMiddle(['admin', 'specialist']), as
 router.get('/:squadId/:stationId/:peopleId', auth, roleMiddle(['admin', 'specialist']), async (req, res) => {
     try {
         const people = await People.findById(req.params.peopleId).populate('rank').populate('propertyes.property').exec();
-        const norm = await Norm.findOne({ owners: { "$in": people.rank._id } }).populate('properties.property')
+        const norm = await Norm.findOne({ owners: { "$in": people.rank._id }, sex: people.sex }).populate('properties.property')
         res.json({ people, norm });
     } catch (error) {
         console.log(error);

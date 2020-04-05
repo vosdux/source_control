@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, InputNumber } from 'antd';
-import { errorModalCreate } from '../../helpers/Modals';
-import { http } from '../../helpers/Utils';
 
 class AddForm extends Component {
     state = {};
@@ -25,7 +23,7 @@ class AddForm extends Component {
                     {getFieldDecorator('count', {
                         rules: [{ required: true, message: 'Поле обязательно для заполнения' }],
                     })(
-                        <InputNumber min={0} max={editibleData && editibleData.count} placeholder='Количество' onChange={this.handleInputChage} />,
+                        <InputNumber style={{ width: '100%' }} min={0} max={editibleData && editibleData.count} placeholder='Количество' onChange={this.handleInputChage} />,
                     )}
                 </Form.Item>
                 <Form.Item>

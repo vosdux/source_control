@@ -31,6 +31,7 @@ class Storage extends Component {
 
     componentDidMount() {
         this.getProperty();
+        this.getPermissions();
     };
 
     getProperty = async () => {
@@ -73,6 +74,14 @@ class Storage extends Component {
         }
     };
 
+    getPermissions = () => {
+        const { role } = this.props;
+        const { columns } = this.state;
+        getRole(role) === 'storage' && columns.push({
+            render: (text, record) => <Button onClick={() => this.openModal('discard', record)}>Списать</Button>
+        });
+    }
+
     onTabChange = (key) => {
         this.setState({ activeKey: key });
     };
@@ -90,9 +99,6 @@ class Storage extends Component {
         const { data, storage, activeKey, modalVisible, columns, mode, editibleData } = this.state;
         const { Content } = Layout;
         const { TabPane } = Tabs;
-        getRole(role) === 'storage' && columns.push({
-            render: (text, record) => <Button onClick={() => this.openModal('discard', record)}>Списать</Button>
-        });
         return (
             <Content style={{ padding: '0 24px', minHeight: 280 }}>
                 <Tabs activeKey={`${activeKey}`} tabPosition='left' onChange={this.onTabChange} style={{ height: 500 }}>

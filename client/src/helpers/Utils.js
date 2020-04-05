@@ -64,7 +64,8 @@ export const refreshToken = async () => {
     }
 };
 
-export const http = async (url, method = 'get', body) => {
+export const http = async (url, method = 'get', body, responseType) => {
+    await refreshToken();
     let obj = {
         url: `${process.env.REACT_APP_BASE}${url}`,
         method,
@@ -73,6 +74,8 @@ export const http = async (url, method = 'get', body) => {
     if (body) {
         obj.data = body;
     }
-    await refreshToken();
+    if (responseType) {
+        obj.responseType = responseType;
+    }
     return axios(obj);
 };

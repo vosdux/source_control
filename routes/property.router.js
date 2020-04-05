@@ -8,7 +8,7 @@ const router = Router();
 
 const roleMiddle = (roles) => (req, res, next) => role(req, res, next, roles);
 
-router.get('/', auth, roleMiddle(['admin']), async (req, res) => {
+router.get('/', auth, roleMiddle(['admin', 'storage']), async (req, res) => {
     try {
         let sorter = {}
         console.log(req.query)

@@ -184,6 +184,7 @@ class PeopleCard extends Component {
                     >
                         <PropertyForm
                             properties={norm && norm.properties}
+                            people={people}
                             peopleId={this.props.location.pathname.split('/')[4]}
                             closeModal={this.closeModal}
                             getPeopleData={this.onGetPeopleData}

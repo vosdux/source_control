@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Icon, Input, Button, Row, Col, Card } from 'antd';
-import { connect } from 'react-redux';
 import axios from 'axios';
 import { errorModalCreate } from '../../helpers/Modals';
-import * as actions from '../../store/actions';
 
 class NormalLoginForm extends Component {
     state = {
@@ -19,30 +17,19 @@ class NormalLoginForm extends Component {
             });
             if (response.status === 200) {
                 const { data } = response;
-                console.log(data)
                 if (data) {
-                    this.loginHandler(data.accessToken, data.refreshToken, data.role, data.expiredIn)
+                    this.props.onSuccess(data.accessToken, data.refreshToken, data.role, data.expiredIn);
                 }
             }
-            
+
         } catch (error) {
             if (error.response) {
                 this.setState({ loading: false }, () => errorModalCreate(error.response.data.message));
             } else {
                 this.setState({ loading: false }, () => errorModalCreate(error.message));
             }
-            
-        }
-    }
 
-    loginHandler = (accessToken, refreshToken, role, expiredIn) => {
-        localStorage.setItem('userData', JSON.stringify({
-            accessToken,
-            refreshToken,
-            role,
-            expiredIn
-        }));
-        this.props.userLoginAction(true, role);
+        }
     }
 
     handleSubmit = async (e) => {
@@ -97,11 +84,6 @@ class NormalLoginForm extends Component {
     }
 }
 
-const mapDispatchToProps = {
-    userLoginAction: actions.userLoginAction
-};
-
-const withNormalLoginForm = connect(null, mapDispatchToProps)(NormalLoginForm);
-const Auth = Form.create({ name: 'normal_login' })(withNormalLoginForm);
+const Auth = Form.create({ name: 'normal_login' })(NormalLoginForm);
 
 export default Auth;

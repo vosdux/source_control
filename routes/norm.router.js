@@ -20,7 +20,10 @@ router.get('/', auth, async (req, res) => {
 
 router.put('/:id', auth, roleMiddle(['admin']), async (req, res) => {
     try {
-        const norm = await Norm.findByIdAndUpdate(req.params.id, { $set: { properties: req.body.properties, owners: req.body.owners } });
+        const norm = await Norm.findByIdAndUpdate(req.params.id, { $set: { properties: req.body.properties, owners: req.body.owners, sex: req.body.sex } });
+        req.body.owners.forEach(item => {
+            
+        })
         res.json({ norm });
     } catch (error) {
         console.log(error)

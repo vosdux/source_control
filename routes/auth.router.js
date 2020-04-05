@@ -13,6 +13,7 @@ const updateToken = async (userId, role) => {
     try {
         const accessToken = authHelper.generateAccessToken(userId, role);
         const refreshToken = authHelper.generateRefreshToken(role);
+        console.log(refreshToken)
         await authHelper.replaceDbRefreshToken(refreshToken.id, userId);
 
         return { accessToken, refreshToken: refreshToken.token };
@@ -45,7 +46,6 @@ router.post(
                 return res.status(400).json({ message: 'Неверный логин' });
             }
 
-
             const isMatch = bcrypt.compareSync(password, user.password);
 
             if (!isMatch) {
@@ -70,7 +70,7 @@ router.post('/refresh-token', async (req, res) => {
         if (payload.type !== 'refresh') {
             res.status(400).json({ message: 'Неверный токен!' });
         }
-
+        console.log(payload.id)
         const tokenData = await Token.findOne({ tokenId: payload.id });
 
         if (tokenData === null) {
@@ -83,7 +83,7 @@ router.post('/refresh-token', async (req, res) => {
 
         res.json({ ...tokens, expiredIn });
     } catch (error) {
-        console.log('kek')
+        console.log(error)
         if (error instanceof jwt.TokenExpiredError) {
             res.status(400).json({ message: 'Ошибка. Перезайдите в приложение!', });
         } else if (error instanceof jwt.JsonWebTokenError) {

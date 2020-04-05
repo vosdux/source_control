@@ -9,12 +9,7 @@ import reducer from './store/reducer';
 import './index.css';
 import 'antd/dist/antd.css'
 
-
-const initialState = {
-    isAuthinticated: false,
-    role: null
-}
-const store = createStore(reducer, initialState);
+const store = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 const history = createBrowserHistory();
 
 ReactDOM.render(

@@ -16,7 +16,7 @@ class Peoples extends Component {
                 },
                 {
                     title: 'Звание',
-                    dataIndex: 'rank',
+                    dataIndex: 'rank.name',
                 },
                 {
                     title: 'Должность',
